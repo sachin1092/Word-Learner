@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="my_awesome_red">#ff3882ff</color>
+    <color name="my_awesome_darker_red">#ff152e5d</color>
+    <color name="my_awesome_color">#ff3882ff</color>
+    <color name="my_awesome_darker_color">#ff152e5d</color>
+    <color name="accent">#cffef3a8</color>
+    <color name="back">#00dfffee</color>
+
+    <color name="main_button_blue_normal">#1e8bd4</color>
+    <color name="main_button_blue_selected">#c01e8bd4</color>
+    <color name="main_button_yellow_normal">#F0AD4E</color>
+    <color name="main_button_yellow_selected">#ffc79041</color>
+    <color name="main_button_green_normal">#5CB85C</color>
+    <color name="main_button_green_selected">#ff478e47</color>
+    <color name="main_button_normal">#606060</color>
+    <color name="main_button_selected">#909090</color>
+    <color name="main_button_red_normal">#ff4444</color>
+    <color name="main_button_red_selected">#c0ff4444</color>
+
+</resources>
