@@ -41,7 +41,7 @@ public class AddWords extends Activity {
     ListView lvWords;
     ArrayList<String> words;
     ListAdapter mAdapter;
-    public static final String API_KEY = "YOUR_API_KEY"
+    public static final String API_KEY = "YOUR_API_KEY";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

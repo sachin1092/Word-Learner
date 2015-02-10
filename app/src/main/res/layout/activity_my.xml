@@ -32,4 +32,12 @@
         android:padding="10dp"
         android:id="@+id/buttonTest"/>
 
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Export Word List"
+        android:tint="@color/accent"
+        android:padding="10dp"
+        android:id="@+id/buttonExport"/>
+
 </LinearLayout>

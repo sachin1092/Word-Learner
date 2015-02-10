@@ -4,16 +4,23 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 
 public class MyActivity extends Activity {
@@ -53,6 +60,13 @@ public class MyActivity extends Activity {
             }
         });
 
+        findViewById(R.id.buttonExport).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new ExportWords().execute();
+            }
+        });
+
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
         File mFile = new File(mDir.getPath() + "/" + Utils.WordsFile);
         if(!mFile.exists()){
@@ -63,4 +77,62 @@ public class MyActivity extends Activity {
         }
 
     }
+
+
+    public class ExportWords extends AsyncTask<String, Void, String> {
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            ArrayList<String> word_list = Utils.loadListFromFile(Utils.WordsFile);
+            File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
+            File mFile = new File(mDir.getPath() + "/Exported List.txt");
+            try {
+                // Assume default encoding.
+                FileWriter fileWriter =
+                        new FileWriter(mFile);
+
+                // Always wrap FileWriter in BufferedWriter.
+                BufferedWriter bufferedWriter =
+                        new BufferedWriter(fileWriter);
+
+                // Note that write() does not automatically
+                // append a newline character.
+                for(String s : word_list){
+                    bufferedWriter.write(s);
+                    bufferedWriter.write(": ");
+                    if (Utils.hasWord(s)) {
+                        Log.d("WordLearner", "Loading from memory");
+                        bufferedWriter.write(Utils.getDefinition(s));
+                    }
+                    Log.d("WordLearner", "Loading from wordnik");
+                    bufferedWriter.write(Utils.saveWord(s, Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + s.trim().toLowerCase(Locale.US) + Utils.URL2))));
+                    bufferedWriter.newLine();
+                }
+
+                // Always close files.
+                bufferedWriter.close();
+            }
+            catch(IOException ex) {
+                System.out.println(
+                        "Error writing to file '"
+                                + "Exported List.txt" + "'");
+                // Or we could just do this:
+                // ex.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
 }
