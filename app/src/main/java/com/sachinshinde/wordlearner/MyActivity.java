@@ -121,7 +121,7 @@ public class MyActivity extends Activity {
                     }
                     bufferedWriter.newLine();
                 }
-
+                Log.d("WordLearner", "Export completed");
                 // Always close files.
                 bufferedWriter.close();
             }
