@@ -98,7 +98,7 @@ public class Utils {
     }
 
     public static final String URL1 = "http://api.wordnik.com/v4/word.json/";
-    public static final String URL2 = "/definitions?limit=200&includeRelated=true&useCanonical=false&includeTags=false&api_key=3c4e5ed030902f61c4539ad85b629c84c360d1d2908fe2d14";
+    public static final String URL2 = "/definitions?limit=200&includeRelated=true&useCanonical=false&includeTags=false&api_key="+Constants.API_KEY;
 
     public static boolean hasWord(String word) {
         word = word.trim().toLowerCase(Locale.getDefault());
