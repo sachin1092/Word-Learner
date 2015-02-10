@@ -115,9 +115,10 @@ public class MyActivity extends Activity {
                     if (Utils.hasWord(s)) {
                         Log.d("WordLearner", "Loading from memory");
                         bufferedWriter.write(Utils.getDefinition(s));
+                    } else {
+                        Log.d("WordLearner", "Loading from wordnik");
+                        bufferedWriter.write(Utils.saveWord(s, Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + s.trim().toLowerCase(Locale.US) + Utils.URL2))));
                     }
-                    Log.d("WordLearner", "Loading from wordnik");
-                    bufferedWriter.write(Utils.saveWord(s, Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + s.trim().toLowerCase(Locale.US) + Utils.URL2))));
                     bufferedWriter.newLine();
                 }
 
