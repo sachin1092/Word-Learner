@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.v7.internal.widget.ProgressBarCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;

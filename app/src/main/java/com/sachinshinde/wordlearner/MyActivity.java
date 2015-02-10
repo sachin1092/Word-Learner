@@ -90,6 +90,7 @@ public class MyActivity extends Activity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            Toast.makeText(getBaseContext(), "Export successful", Toast.LENGTH_LONG).show();
         }
 
         @Override
