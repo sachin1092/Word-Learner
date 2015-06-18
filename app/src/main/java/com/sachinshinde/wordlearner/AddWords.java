@@ -76,6 +76,7 @@ public class AddWords extends Activity {
 //                    SerialPreference.savePrefs(getBaseContext(), words);
                     Utils.writeListToFile(mAdapter.getList(),Utils.WordsFile);
                     addToSessionList(et.getText().toString().trim());
+                    performItemClick(mAdapter.getPosition(et.getText().toString()));
                     et.setText("");
                     ((TextView) findViewById(R.id.tvCount)).setText("Total Count: " + mAdapter.getList().size() + " words");
                 }
@@ -83,149 +84,10 @@ public class AddWords extends Activity {
         });
 
         lvWords.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            AlertDialog dialog;
+
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                InputMethodManager imm = (InputMethodManager)getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
-                final AlertDialog.Builder builder = new AlertDialog.Builder(AddWords.this);
-                builder.setTitle(mAdapter.getItem(i));
-                ProgressBar pb = new ProgressBar(AddWords.this);
-                pb.setIndeterminate(true);
-
-                builder.setView(pb);
-                builder.setPositiveButton("Got It!", null);
-                new AsyncTask<String, Void, String>(){
-
-                    @Override
-                    protected String doInBackground(String... strings) {
-                        if(Utils.hasWord(strings[0])){
-                            Log.d("WordLearner", "Loading from memory");
-                            return Utils.getDefinition(strings[0]);
-                        }
-                        Log.d("WordLearner", "Loading from wordnik");
-                        return Utils.saveWord(strings[0], Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + strings[0].trim().toLowerCase(Locale.US) + Utils.URL2)));
-                    }
-
-                    @Override
-                    protected void onPostExecute(String s) {
-
-                        builder.setView(null);
-                        builder.setMessage(s);
-                        builder.setNeutralButton("Speak", null);
-                        final AlertDialog mDialog = builder.create();
-                        mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-
-
-
-                            @Override
-                            public void onShow(DialogInterface dialog) {
-
-                                final Button b = mDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
-
-                                final Handler handler = new Handler();
-                                final Runnable r = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        handler.removeCallbacks(this);
-                                        if(done){
-                                            b.setText("Speak");
-                                            return;
-                                        }
-                                        handler.postDelayed(this, 250);
-                                        if(!b.getText().toString().contains(".")){
-                                            b.setText(".");
-                                        } else {
-                                            if(b.getText().toString().length() == 3){
-                                                b.setText(".");
-                                            } else {
-                                                b.setText(b.getText().toString() + ".");
-                                            }
-                                        }
-                                    }
-                                };
-
-                                b.setOnClickListener(new View.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(View view) {
-
-                                        done = false;
-
-                                        handler.post(r);
-
-                                        new AsyncTask<String, Void, String>() {
-                                            @Override
-                                            protected void onPreExecute() {
-                                                super.onPreExecute();
-                                            }
-
-                                            @Override
-                                            protected String doInBackground(String... strings) {
-                                                String jsonString = NetworkUtils.GET("http://api.wordnik.com:80/v4/word.json/" + strings[0].trim().toLowerCase(Locale.getDefault()) + "/audio?useCanonical=false&limit=50&api_key=" + API_KEY);
-                                                try {
-                                                    JSONArray jsonArray = new JSONArray(jsonString);
-                                                    if (jsonArray.length() == 1) {
-                                                        return jsonArray.getJSONObject(0).getString("fileUrl");
-                                                    } else if(jsonArray.length() > 1){
-                                                        return jsonArray.getJSONObject(1).getString("fileUrl");
-                                                    } else {
-                                                        return null;
-                                                    }
-                                                } catch (JSONException e) {
-                                                    e.printStackTrace();
-                                                }
-
-                                                return null;
-                                            }
-
-                                            @Override
-                                            protected void onPostExecute(String s) {
-                                                super.onPostExecute(s);
-
-                                                if (s == null) {
-                                                    done = true;
-                                                    Toast.makeText(getBaseContext(), "No audio found", Toast.LENGTH_LONG).show();
-                                                } else {
-                                                    final MediaPlayer mp = new MediaPlayer();
-                                                    try {
-                                                        mp.setDataSource(s);
-                                                        mp.prepareAsync();
-                                                        mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                                            @Override
-                                                            public void onPrepared(MediaPlayer mp) {
-                                                                done = true;
-                                                                mp.start();
-                                                            }
-                                                        });
-                                                        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                                            @Override
-                                                            public void onCompletion(MediaPlayer mediaPlayer) {
-                                                                if (mp != null)
-                                                                    mp.release();
-                                                            }
-                                                        });
-
-                                                    } catch (IOException e) {
-                                                    }
-                                                }
-
-
-                                            }
-                                        }.execute(mAdapter.getItem(i));
-
-                                    }
-                                });
-                            }
-                        });
-                        mDialog.show();
-                        dialog.cancel();
-                        super.onPostExecute(s);
-                    }
-                }.execute(mAdapter.getItem(i));
-                dialog = builder.create();
-                dialog.show();
+                performItemClick(i);
             }
         });
 
@@ -294,7 +156,153 @@ public class AddWords extends Activity {
         });
 
 
+    }
 
+    AlertDialog dialog;
+
+    public void performItemClick(final int position){
+
+        InputMethodManager imm = (InputMethodManager)getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(AddWords.this);
+        builder.setTitle(mAdapter.getItem(position));
+        ProgressBar pb = new ProgressBar(AddWords.this);
+        pb.setIndeterminate(true);
+
+        builder.setView(pb);
+        builder.setPositiveButton("Got It!", null);
+        new AsyncTask<String, Void, String>(){
+
+            @Override
+            protected String doInBackground(String... strings) {
+                if(Utils.hasWord(strings[0])){
+                    Log.d("WordLearner", "Loading from memory");
+                    return Utils.getDefinition(strings[0]);
+                }
+                Log.d("WordLearner", "Loading from wordnik");
+                return Utils.saveWord(strings[0], Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + strings[0].trim().toLowerCase(Locale.US) + Utils.URL2)));
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+
+                builder.setView(null);
+                builder.setMessage(s);
+                builder.setNeutralButton("Speak", null);
+                final AlertDialog mDialog = builder.create();
+
+                mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+
+
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+
+                        final Button b = mDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+
+                        final Handler handler = new Handler();
+                        final Runnable r = new Runnable() {
+                            @Override
+                            public void run() {
+                                handler.removeCallbacks(this);
+                                if(done){
+                                    b.setText("Speak");
+                                    return;
+                                }
+                                handler.postDelayed(this, 250);
+                                if(!b.getText().toString().contains(".")){
+                                    b.setText(".");
+                                } else {
+                                    if(b.getText().toString().length() == 3){
+                                        b.setText(".");
+                                    } else {
+                                        b.setText(b.getText().toString() + ".");
+                                    }
+                                }
+                            }
+                        };
+
+                        b.setOnClickListener(new View.OnClickListener() {
+
+                            @Override
+                            public void onClick(View view) {
+
+                                done = false;
+
+                                handler.post(r);
+
+                                new AsyncTask<String, Void, String>() {
+                                    @Override
+                                    protected void onPreExecute() {
+                                        super.onPreExecute();
+                                    }
+
+                                    @Override
+                                    protected String doInBackground(String... strings) {
+                                        String jsonString = NetworkUtils.GET("http://api.wordnik.com:80/v4/word.json/" + strings[0].trim().toLowerCase(Locale.getDefault()) + "/audio?useCanonical=false&limit=50&api_key=" + API_KEY);
+                                        try {
+                                            JSONArray jsonArray = new JSONArray(jsonString);
+                                            if (jsonArray.length() == 1) {
+                                                return jsonArray.getJSONObject(0).getString("fileUrl");
+                                            } else if(jsonArray.length() > 1){
+                                                return jsonArray.getJSONObject(1).getString("fileUrl");
+                                            } else {
+                                                return null;
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        return null;
+                                    }
+
+                                    @Override
+                                    protected void onPostExecute(String s) {
+                                        super.onPostExecute(s);
+
+                                        if (s == null) {
+                                            done = true;
+                                            Toast.makeText(getBaseContext(), "No audio found", Toast.LENGTH_LONG).show();
+                                        } else {
+                                            final MediaPlayer mp = new MediaPlayer();
+                                            try {
+                                                mp.setDataSource(s);
+                                                mp.prepareAsync();
+                                                mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                                    @Override
+                                                    public void onPrepared(MediaPlayer mp) {
+                                                        done = true;
+                                                        mp.start();
+                                                    }
+                                                });
+                                                mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                                    @Override
+                                                    public void onCompletion(MediaPlayer mediaPlayer) {
+                                                        if (mp != null)
+                                                            mp.release();
+                                                    }
+                                                });
+
+                                            } catch (IOException e) {
+                                            }
+                                        }
+
+
+                                    }
+                                }.execute(mAdapter.getItem(position));
+
+                            }
+                        });
+                    }
+                });
+                mDialog.show();
+                dialog.cancel();
+                super.onPostExecute(s);
+            }
+        }.execute(mAdapter.getItem(position));
+        dialog = builder.create();
+        dialog.show();
     }
 
     boolean done = false;

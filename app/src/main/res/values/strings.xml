@@ -6,5 +6,11 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_add_words">Add Words</string>
     <string name="title_activity_test_words">Test Yourself</string>
+    <string name="settings">Settings</string>
+    <string name="gopro">Remove Ads</string>
+    <string name="rate">Rate</string>
+    <string name="share">Share</string>
+    <string name="morebydev">More By Developer</string>
+    <string name="about">About</string>
 
 </resources>
