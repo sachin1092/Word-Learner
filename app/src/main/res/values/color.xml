@@ -26,6 +26,7 @@
     <color name="colorPrimaryLight">#B3E5FC</color>
     <color name="colorPrimaryText">#ffffff</color>
     <color name="colorSecondaryText">#b1b1b1</color>
+    <color name="colorTernaryText">#434343</color>
     <color name="colorDivider">#B6B6B6</color>
     <color name="colorIcons">#B6B6B6</color>
 

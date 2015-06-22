@@ -77,6 +77,7 @@
                     android:paddingBottom="15dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
+                    android:textColor="@color/colorTernaryText"
                     android:text="WORD LIST"
                     android:tint="@color/accent" />
             </android.support.v7.widget.CardView>
@@ -104,6 +105,7 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:text="TEST"
+                    android:textColor="@color/colorTernaryText"
                     android:tint="@color/accent" />
             </android.support.v7.widget.CardView>
 
@@ -129,6 +131,7 @@
                     android:paddingBottom="15dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
+                    android:textColor="@color/colorTernaryText"
                     android:text="IMPORT WORD LIST"
                     android:tint="@color/accent" />
             </android.support.v7.widget.CardView>
@@ -154,6 +157,7 @@
                     android:paddingTop="15dp"
                     android:paddingBottom="15dp"
                     android:textSize="12sp"
+                    android:textColor="@color/colorTernaryText"
                     android:textStyle="bold"
                     android:text="EXPORT WORD LIST"
                     android:tint="@color/accent" />

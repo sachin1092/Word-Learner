@@ -1,22 +1,25 @@
 package com.sachinshinde.wordlearner;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.text.SpannableString;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
-import android.text.util.Linkify;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,11 +40,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class TestWords extends Activity {
+public class TestWords extends AppCompatActivity {
 
     ArrayList<String> words = new ArrayList<String>();
     TextView tvWord;
     GetMeaning getMeaning;
+    private TextToSpeech ttobj;
 
     @Override
     protected void onRestart() {
@@ -53,7 +57,7 @@ public class TestWords extends Activity {
     @Override
     protected void onPause() {
         Utils.writeListToFile(words, Utils.SessionFile);
-        if(words.size() != 0)
+        if (words.size() != 0)
             PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putInt("LastIndex", words.indexOf(tvWord.getText().toString())).commit();
         else
             PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putInt("LastIndex", 0).commit();
@@ -65,6 +69,11 @@ public class TestWords extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_words);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+        }
         words = Utils.loadListFromFile(getIntent().getStringExtra("file"));
 
 //                SerialPreference.retPrefs(getBaseContext());
@@ -78,11 +87,11 @@ public class TestWords extends Activity {
         if (getIntent().getStringExtra("file").trim().equals(Utils.WordsFile))
             tvWord.setText(getRandomWord());
         else
-        try {
-            tvWord.setText(words.get(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getInt("LastIndex", new Random().nextInt((words.size())))));
-        }catch(Exception ex){
-            tvWord.setText(getRandomWord());
-        }
+            try {
+                tvWord.setText(words.get(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getInt("LastIndex", new Random().nextInt((words.size())))));
+            } catch (Exception ex) {
+                tvWord.setText(getRandomWord());
+            }
         ((TextView) findViewById(R.id.tvMeaning)).setText("");
         findViewById(R.id.pbMeaning).setVisibility(View.GONE);
 
@@ -126,89 +135,53 @@ public class TestWords extends Activity {
 
         ((TextView) findViewById(R.id.tvCount)).setText(words.size() + " WORDS TO GO.");
 
+
+        ttobj = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+            }
+        });
+
+        ttobj.setLanguage(Locale.US);
+
         findViewById(R.id.bSpeak).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new AsyncTask<String, Void, String>() {
-                    @Override
-                    protected void onPreExecute() {
-                        ((ImageButton) findViewById(R.id.bSpeak)).setImageResource(0);
-                        findViewById(R.id.pbVoice).setVisibility(View.VISIBLE);
-                        super.onPreExecute();
-                    }
 
-                    @Override
-                    protected String doInBackground(String... strings) {
-                        String jsonString = NetworkUtils.GET("http://api.wordnik.com:80/v4/word.json/" + strings[0].trim().toLowerCase(Locale.getDefault()) + "/audio?useCanonical=false&limit=50&api_key=" + AddWords.API_KEY);
-                        try {
-                            JSONArray jsonArray = new JSONArray(jsonString);
-                            if (jsonArray.length() == 1) {
-                                return jsonArray.getJSONObject(0).getString("fileUrl");
-                            } else if (jsonArray.length() > 1) {
-                                return jsonArray.getJSONObject(1).getString("fileUrl");
-                            } else {
-                                return null;
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                ttobj.setSpeechRate(0.8f);
 
-                        return null;
-                    }
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
-                    @Override
-                    protected void onPostExecute(String s) {
-                        super.onPostExecute(s);
-
-                        if (s == null) {
-                            ((ImageButton) findViewById(R.id.bSpeak)).setImageResource(R.drawable.speaker);
-                            findViewById(R.id.pbVoice).setVisibility(View.GONE);
-                            Toast.makeText(getBaseContext(), "No audio found", Toast.LENGTH_LONG).show();
-                        } else {
-                            final MediaPlayer mp = new MediaPlayer();
-                            try {
-                                mp.setDataSource(s);
-                                mp.prepareAsync();
-                                mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                    @Override
-                                    public void onPrepared(MediaPlayer mp) {
-                                        ((ImageButton) findViewById(R.id.bSpeak)).setImageResource(R.drawable.speaker);
-                                        findViewById(R.id.pbVoice).setVisibility(View.GONE);
-                                        mp.start();
-                                    }
-                                });
-                                mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                    @Override
-                                    public void onCompletion(MediaPlayer mediaPlayer) {
-                                        if (mp != null)
-                                            mp.release();
-                                    }
-                                });
-
-                            } catch (IOException e) {
-                            }
-                        }
-
-
-                    }
-                }.execute(tvWord.getText().toString());
+                    ttobj.speak(tvWord.getText().toString(), TextToSpeech.QUEUE_FLUSH, null, String.valueOf(System.currentTimeMillis()));
+                } else {
+                    ttobj.speak(tvWord.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+                }
             }
         });
+
 
         findViewById(R.id.bEdit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(TestWords.this);
+
+                builder.setTitle("Edit Word");
 //                builder.setTitle("Edit");
                 final int index = words.indexOf(tvWord.getText().toString());
                 final String oldWord = tvWord.getText().toString();
-                final EditText edit = new EditText(TestWords.this);
-                edit.setText(tvWord.getText().toString());
-                builder.setView(edit);
-                builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
 
+//                builder.setView(edit);
+
+                View mView = LayoutInflater.from(TestWords.this).inflate(R.layout.edit_word, null);
+
+                final EditText edit = (EditText) mView.findViewById(R.id.etEditWord);
+                edit.setText(tvWord.getText().toString());
+
+                builder.setView(mView);
+
+                mView.findViewById(R.id.fabDone).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
                         words.remove(index);
                         words.add(index, edit.getText().toString());
                         Utils.writeListToFile(words, Utils.SessionFile);
@@ -221,12 +194,13 @@ public class TestWords extends Activity {
                         InputMethodManager imm = (InputMethodManager) getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+                        mDialog.cancel();
                     }
                 });
 
-                builder.setNegativeButton("Remove", new DialogInterface.OnClickListener() {
+                mView.findViewById(R.id.fabRemove).setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                    public void onClick(View view) {
                         words.remove(index);
                         Utils.writeListToFile(words, Utils.SessionFile);
                         ArrayList<String> toSave = Utils.loadListFromFile(Utils.WordsFile);
@@ -238,10 +212,13 @@ public class TestWords extends Activity {
                                 Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
                         ((TextView) findViewById(R.id.tvCount)).setText(words.size() + " WORDS TO GO.");
+                        mDialog.cancel();
                     }
                 });
 
-                builder.show();
+
+                mDialog = builder.create();
+                mDialog.show();
             }
         });
 
@@ -250,11 +227,13 @@ public class TestWords extends Activity {
             @Override
             public void onClick(View view) {
                 findViewById(R.id.bLinkify).setBackgroundResource(isLink ? R.drawable.main_button_green : R.drawable.main_button_red);
-                setText(((TextView) findViewById(R.id.tvMeaning)).getText().toString(),!isLink);
+                setText(((TextView) findViewById(R.id.tvMeaning)).getText().toString(), !isLink);
             }
         });
 
     }
+
+    AlertDialog mDialog;
 
     public String getRandomWord() {
         if (words.size() == 0 || words.isEmpty()) {
@@ -285,7 +264,7 @@ public class TestWords extends Activity {
             findViewById(R.id.pbMeaning).setVisibility(View.GONE);
             isLink = false;
             setText(s, false);
-            if(!s.isEmpty() || s != null){
+            if (!s.isEmpty() || s != null) {
                 findViewById(R.id.bLinkify).setVisibility(View.VISIBLE);
             }
             findViewById(R.id.tvMeaning).setVisibility(View.VISIBLE);
@@ -309,7 +288,9 @@ public class TestWords extends Activity {
         public ClickableURLSpan(String url) {
             super(url);
         }
+
         AlertDialog dialog;
+
         @Override
         public void onClick(View widget) {
             final String clickedText = getURL().trim().toLowerCase(Locale.getDefault());
@@ -320,11 +301,11 @@ public class TestWords extends Activity {
 
             builder.setView(pb);
             builder.setPositiveButton("Got It!", null);
-            new AsyncTask<String, Void, String>(){
+            new AsyncTask<String, Void, String>() {
 
                 @Override
                 protected String doInBackground(String... strings) {
-                    if(Utils.hasWord(strings[0])){
+                    if (Utils.hasWord(strings[0])) {
                         Log.d("WordLearner", "Loading from memory");
                         return Utils.getDefinition(strings[0]);
                     }
@@ -342,7 +323,6 @@ public class TestWords extends Activity {
                     mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
 
-
                         @Override
                         public void onShow(DialogInterface dialog) {
 
@@ -353,15 +333,15 @@ public class TestWords extends Activity {
                                 @Override
                                 public void run() {
                                     handler.removeCallbacks(this);
-                                    if(done){
+                                    if (done) {
                                         b.setText("Speak");
                                         return;
                                     }
                                     handler.postDelayed(this, 250);
-                                    if(!b.getText().toString().contains(".")){
+                                    if (!b.getText().toString().contains(".")) {
                                         b.setText(".");
                                     } else {
-                                        if(b.getText().toString().length() == 3){
+                                        if (b.getText().toString().length() == 3) {
                                             b.setText(".");
                                         } else {
                                             b.setText(b.getText().toString() + ".");
@@ -392,7 +372,7 @@ public class TestWords extends Activity {
                                                 JSONArray jsonArray = new JSONArray(jsonString);
                                                 if (jsonArray.length() == 1) {
                                                     return jsonArray.getJSONObject(0).getString("fileUrl");
-                                                } else if(jsonArray.length() > 1){
+                                                } else if (jsonArray.length() > 1) {
                                                     return jsonArray.getJSONObject(1).getString("fileUrl");
                                                 } else {
                                                     return null;
@@ -453,9 +433,9 @@ public class TestWords extends Activity {
         }
     }
 
-    public void setText(String input, boolean linkify){
+    public void setText(String input, boolean linkify) {
 
-        if(linkify) {
+        if (linkify) {
             isLink = true;
             SpannableStringBuilder builder = new SpannableStringBuilder(input);
 

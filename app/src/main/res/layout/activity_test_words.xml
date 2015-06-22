@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/back"
+    android:background="@color/window_background"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -60,7 +60,7 @@
         android:layout_below="@+id/bSpeak"
         android:paddingLeft="5dp"
         android:text="Total Count: 1000 words"
-        android:textColor="#ff3882ff"
+        android:textColor="@color/colorPrimary"
         android:textSize="15sp" />
 
     <View
@@ -68,7 +68,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_below="@+id/tvCount"
-        android:background="#ff3882ff"
+        android:background="@color/colorPrimary"
         android:paddingLeft="5dp"
         android:paddingRight="5dp" />
 
