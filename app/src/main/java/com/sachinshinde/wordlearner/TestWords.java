@@ -166,11 +166,8 @@ public class TestWords extends AppCompatActivity {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(TestWords.this);
 
                 builder.setTitle("Edit Word");
-//                builder.setTitle("Edit");
                 final int index = words.indexOf(tvWord.getText().toString());
                 final String oldWord = tvWord.getText().toString();
-
-//                builder.setView(edit);
 
                 View mView = LayoutInflater.from(TestWords.this).inflate(R.layout.edit_word, null);
 
