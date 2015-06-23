@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.Voice;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableStringBuilder;
@@ -23,10 +22,16 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.sachinshinde.wordlearner.module.Meaning;
+import com.sachinshinde.wordlearner.module.SubWords;
+import com.sachinshinde.wordlearner.module.Word;
+import com.sachinshinde.wordlearner.utils.ProcessWord;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -92,15 +97,21 @@ public class TestWords extends AppCompatActivity {
             } catch (Exception ex) {
                 tvWord.setText(getRandomWord());
             }
-        ((TextView) findViewById(R.id.tvMeaning)).setText("");
+//        ((TextView) findViewById(R.id.tvMeaning)).setText("");
+
+        ((FrameLayout)findViewById(R.id.pbMeaning)).addView(Utils.getProgressView(TestWords.this));
+
         findViewById(R.id.pbMeaning).setVisibility(View.GONE);
+
+        findViewById(R.id.flWordsContainer).setVisibility(View.GONE);
 
         findViewById(R.id.bNo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 findViewById(R.id.bLinkify).setVisibility(View.GONE);
                 tvWord.setText(getRandomWord());
-                ((TextView) findViewById(R.id.tvMeaning)).setText("");
+//                ((TextView) findViewById(R.id.tvMeaning)).setText("");
+                findViewById(R.id.flWordsContainer).setVisibility(View.GONE);
                 isLink = false;
                 findViewById(R.id.bLinkify).setBackgroundResource(R.drawable.main_button_green);
             }
@@ -112,7 +123,8 @@ public class TestWords extends AppCompatActivity {
                 findViewById(R.id.bLinkify).setVisibility(View.GONE);
                 words.remove(tvWord.getText().toString());
                 tvWord.setText(getRandomWord());
-                ((TextView) findViewById(R.id.tvMeaning)).setText("");
+//                ((TextView) findViewById(R.id.tvMeaning)).setText("");
+                findViewById(R.id.flWordsContainer).setVisibility(View.GONE);
                 Utils.writeListToFile(words, Utils.SessionFile);
                 ((TextView) findViewById(R.id.tvCount)).setText(words.size() + " WORDS TO GO.");
                 isLink = false;
@@ -224,7 +236,7 @@ public class TestWords extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 findViewById(R.id.bLinkify).setBackgroundResource(isLink ? R.drawable.main_button_green : R.drawable.main_button_red);
-                setText(((TextView) findViewById(R.id.tvMeaning)).getText().toString(), !isLink);
+//                setText(((TextView) findViewById(R.id.tvMeaning)).getText().toString(), !isLink);
             }
         });
 
@@ -252,29 +264,36 @@ public class TestWords extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             findViewById(R.id.pbMeaning).setVisibility(View.VISIBLE);
-            ((TextView) findViewById(R.id.tvMeaning)).setText("");
+            (findViewById(R.id.flWordsContainer)).setVisibility(View.GONE);
         }
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             findViewById(R.id.pbMeaning).setVisibility(View.GONE);
+            (findViewById(R.id.flWordsContainer)).setVisibility(View.VISIBLE);
             isLink = false;
-            setText(s, false);
-            if (!s.isEmpty() || s != null) {
-                findViewById(R.id.bLinkify).setVisibility(View.VISIBLE);
-            }
-            findViewById(R.id.tvMeaning).setVisibility(View.VISIBLE);
+//            setText(s, false);
+//            if (!s.isEmpty() || s != null) {
+//                findViewById(R.id.bLinkify).setVisibility(View.VISIBLE);
+//            }
+//            findViewById(R.id.tvMeaning).setVisibility(View.VISIBLE);
+
+            View mView = Utils.getMeaningsView(s, TestWords.this);
+            if(mView != null)
+                ((FrameLayout)findViewById(R.id.flWordsContainer)).addView(mView);
+            else
+                Toast.makeText(TestWords.this, "Oops! An error occurred. Try Again.", Toast.LENGTH_LONG).show();
         }
 
         @Override
         protected String doInBackground(String... strings) {
             if (Utils.hasWord(strings[0])) {
                 Log.d("WordLearner", "Loading from memory");
-                return Utils.getDefinition(strings[0]);
+                return Utils.getWordJSON(strings[0]);
             }
-            Log.d("WordLearner", "Loading from wordnik");
-            return Utils.saveWord(strings[0], Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + strings[0].trim().toLowerCase(Locale.US) + Utils.URL2)));
+            Log.d("WordLearner", "Loading from my dictionary");
+            return Utils.saveWord(strings[0], NetworkUtils.GET(Utils.FINAL_URL_SINGLE + strings[0].trim().toLowerCase(Locale.US)));
         }
     }
 
@@ -307,7 +326,7 @@ public class TestWords extends AppCompatActivity {
                         return Utils.getDefinition(strings[0]);
                     }
                     Log.d("WordLearner", "Loading from wordnik");
-                    return Utils.saveWord(strings[0], Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + strings[0].trim().toLowerCase(Locale.US) + Utils.URL2)));
+                    return Utils.saveWord(strings[0], Utils.jsonToWordNikString(NetworkUtils.GET(Utils.URL1 + strings[0].trim().toLowerCase(Locale.US) + Utils.URL2)));
                 }
 
                 @Override
@@ -448,11 +467,11 @@ public class TestWords extends AppCompatActivity {
                 builder.setSpan(url, start, end, 0);
             }
 
-            ((TextView) findViewById(R.id.tvMeaning)).setText(builder);
-            ((TextView) findViewById(R.id.tvMeaning)).setMovementMethod(LinkMovementMethod.getInstance());
+//            ((TextView) findViewById(R.id.tvMeaning)).setText(builder);
+//            ((TextView) findViewById(R.id.tvMeaning)).setMovementMethod(LinkMovementMethod.getInstance());
         } else {
             isLink = false;
-            ((TextView) findViewById(R.id.tvMeaning)).setText(input);
+//            ((TextView) findViewById(R.id.tvMeaning)).setText(input);
         }
     }
 

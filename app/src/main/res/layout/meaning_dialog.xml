@@ -7,19 +7,24 @@
     android:layout_height="wrap_content"
     card_view:cardCornerRadius="4dp">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/window_background"
-        android:orientation="vertical"
-        android:id="@+id/wordsContainer"
-        android:padding="15dp">
+        android:layout_height="wrap_content"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        android:background="@color/window_background">
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/wordsContainer"
+            android:layout_width="match_parent"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
 
+        </LinearLayout>
 
-
-
-    </LinearLayout>
-
+    </ScrollView>
 
 </android.support.v7.widget.CardView>

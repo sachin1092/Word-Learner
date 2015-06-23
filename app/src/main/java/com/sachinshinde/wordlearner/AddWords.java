@@ -1,43 +1,34 @@
 package com.sachinshinde.wordlearner;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
@@ -45,12 +36,16 @@ import java.util.Locale;
 
 public class AddWords extends AppCompatActivity {
 
+    public static final String API_KEY = Constants.API_KEY;
     EditText et;
     View bAdd;
     ListView lvWords;
     ArrayList<String> words;
     ListAdapter mAdapter;
-    public static final String API_KEY = Constants.API_KEY;
+    TextToSpeech ttobj;
+    AlertDialog dialog;
+    boolean done = false;
+    ArrayList<String> sessionList = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +71,16 @@ public class AddWords extends AppCompatActivity {
         lvWords = (ListView) findViewById(R.id.lvWords);
 
 
+        ttobj = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+            }
+        });
+
+        ttobj.setLanguage(Locale.US);
+
+        ttobj.setSpeechRate(0.8f);
+
         words = Utils.loadListFromFile(Utils.WordsFile);
         sessionList = Utils.loadListFromFile(Utils.SessionFile);
 //        SerialPreference.retPrefs(getBaseContext());
@@ -97,12 +102,15 @@ public class AddWords extends AppCompatActivity {
                 if (et.getText().toString() != null && !et.getText().toString().isEmpty()) {
                     words.add(et.getText().toString().trim());
                     Collections.sort(words);
-                    ((ListAdapter)lvWords.getAdapter()).addToList(et.getText().toString().trim());
+                    ((ListAdapter) lvWords.getAdapter()).addToList(et.getText().toString().trim());
                     ((ListAdapter) lvWords.getAdapter()).notifyDataSetChanged();
 //                    SerialPreference.savePrefs(getBaseContext(), words);
-                    Utils.writeListToFile(mAdapter.getList(),Utils.WordsFile);
+                    Utils.writeListToFile(mAdapter.getList(), Utils.WordsFile);
                     addToSessionList(et.getText().toString().trim());
-                    performItemClick(mAdapter.getPosition(et.getText().toString()));
+                    try {
+                        performItemClick(mAdapter.getPosition(et.getText().toString()));
+                    } catch (Exception ex) {
+                    }
                     et.setText("");
                     ((TextView) findViewById(R.id.tvCount)).setText("Total Count: " + mAdapter.getList().size() + " words");
                 }
@@ -113,10 +121,12 @@ public class AddWords extends AppCompatActivity {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                performItemClick(i);
+                try {
+                    performItemClick(i);
+                } catch (Exception ex) {
+                }
             }
         });
-
 
 
         lvWords.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -132,13 +142,13 @@ public class AddWords extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         mAdapter.mList.remove(mAdapter.getItem(pos));
                         words.remove(mAdapter.getItem(pos));
-                        ((ListAdapter)lvWords.getAdapter()).addToList(edit.getText().toString());
+                        ((ListAdapter) lvWords.getAdapter()).addToList(edit.getText().toString());
                         words.add(edit.getText().toString());
                         Collections.sort(words);
                         mAdapter.notifyDataSetChanged();
-                        Utils.writeListToFile(mAdapter.getList(),Utils.WordsFile);
+                        Utils.writeListToFile(mAdapter.getList(), Utils.WordsFile);
                         ((TextView) findViewById(R.id.tvCount)).setText("Total Count: " + mAdapter.getList().size() + " words");
-                        InputMethodManager imm = (InputMethodManager)getSystemService(
+                        InputMethodManager imm = (InputMethodManager) getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
                     }
@@ -150,9 +160,9 @@ public class AddWords extends AppCompatActivity {
                         mAdapter.mList.remove(mAdapter.getItem(pos));
                         words.remove(mAdapter.getItem(pos));
                         mAdapter.notifyDataSetChanged();
-                        Utils.writeListToFile(mAdapter.getList(),Utils.WordsFile);
+                        Utils.writeListToFile(mAdapter.getList(), Utils.WordsFile);
                         ((TextView) findViewById(R.id.tvCount)).setText("Total Count: " + mAdapter.getList().size() + " words");
-                        InputMethodManager imm = (InputMethodManager)getSystemService(
+                        InputMethodManager imm = (InputMethodManager) getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
                     }
@@ -188,158 +198,79 @@ public class AddWords extends AppCompatActivity {
 
     }
 
-    AlertDialog dialog;
+    public void performItemClick(final int position) {
 
-    public void performItemClick(final int position){
-
-        InputMethodManager imm = (InputMethodManager)getSystemService(
+        InputMethodManager imm = (InputMethodManager) getSystemService(
                 Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
         final AlertDialog.Builder builder = new AlertDialog.Builder(AddWords.this);
 //        builder.setTitle(mAdapter.getItem(position));
-        ProgressBar pb = new ProgressBar(AddWords.this);
-        pb.setIndeterminate(true);
+//        ProgressBar pb = new ProgressBar(AddWords.this);
+//        pb.setIndeterminate(true);
 
-        View mView = LayoutInflater.from(AddWords.this).inflate(R.layout.meaning_dialog, null);
+//        View mView = LayoutInflater.from(AddWords.this).inflate(R.layout.meaning_dialog, null);
+//        builder.setView(mView);
 
-        builder.setView(mView);
-
-//        builder.setView(pb);
+        builder.setView(Utils.getProgressView(AddWords.this));
 //        builder.setPositiveButton("Got It!", null);
-//        new AsyncTask<String, Void, String>(){
-//
-//            @Override
-//            protected String doInBackground(String... strings) {
-//                if(Utils.hasWord(strings[0])){
-//                    Log.d("WordLearner", "Loading from memory");
-//                    return Utils.getDefinition(strings[0]);
-//                }
-//                Log.d("WordLearner", "Loading from wordnik");
-//                return Utils.saveWord(strings[0], Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + strings[0].trim().toLowerCase(Locale.US) + Utils.URL2)));
-//            }
-//
-//            @Override
-//            protected void onPostExecute(String s) {
-//
+        new AsyncTask<String, Void, String>() {
+
+            @Override
+            protected String doInBackground(String... strings) {
+                if (Utils.hasWord(strings[0])) {
+                    Log.d("WordLearner", "Loading from memory");
+                    return Utils.getWordJSON(strings[0]);
+                }
+                Log.d("WordLearner", "Loading from my dictionary");
+                return Utils.saveWord(strings[0], NetworkUtils.GET(Utils.FINAL_URL_SINGLE + strings[0].trim().toLowerCase(Locale.US)));
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+
+                View mView = Utils.getMeaningsView(s, AddWords.this);
+                if (mView != null)
+                    builder.setView(mView);
+                else
+                    Toast.makeText(AddWords.this, "Oops! An error occurred. Try Again.", Toast.LENGTH_LONG).show();
+
+
 //                builder.setView(null);
 //                builder.setMessage(s);
 //                builder.setNeutralButton("Speak", null);
-//                final AlertDialog mDialog = builder.create();
+                final AlertDialog mDialog = builder.create();
 //
 //                mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-//
-//
 //
 //                    @Override
 //                    public void onShow(DialogInterface dialog) {
 //
 //                        final Button b = mDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
 //
-//                        final Handler handler = new Handler();
-//                        final Runnable r = new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                handler.removeCallbacks(this);
-//                                if(done){
-//                                    b.setText("Speak");
-//                                    return;
-//                                }
-//                                handler.postDelayed(this, 250);
-//                                if(!b.getText().toString().contains(".")){
-//                                    b.setText(".");
-//                                } else {
-//                                    if(b.getText().toString().length() == 3){
-//                                        b.setText(".");
-//                                    } else {
-//                                        b.setText(b.getText().toString() + ".");
-//                                    }
-//                                }
-//                            }
-//                        };
-//
 //                        b.setOnClickListener(new View.OnClickListener() {
 //
 //                            @Override
 //                            public void onClick(View view) {
 //
-//                                done = false;
+//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //
-//                                handler.post(r);
-//
-//                                new AsyncTask<String, Void, String>() {
-//                                    @Override
-//                                    protected void onPreExecute() {
-//                                        super.onPreExecute();
-//                                    }
-//
-//                                    @Override
-//                                    protected String doInBackground(String... strings) {
-//                                        String jsonString = NetworkUtils.GET("http://api.wordnik.com:80/v4/word.json/" + strings[0].trim().toLowerCase(Locale.getDefault()) + "/audio?useCanonical=false&limit=50&api_key=" + API_KEY);
-//                                        try {
-//                                            JSONArray jsonArray = new JSONArray(jsonString);
-//                                            if (jsonArray.length() == 1) {
-//                                                return jsonArray.getJSONObject(0).getString("fileUrl");
-//                                            } else if(jsonArray.length() > 1){
-//                                                return jsonArray.getJSONObject(1).getString("fileUrl");
-//                                            } else {
-//                                                return null;
-//                                            }
-//                                        } catch (JSONException e) {
-//                                            e.printStackTrace();
-//                                        }
-//
-//                                        return null;
-//                                    }
-//
-//                                    @Override
-//                                    protected void onPostExecute(String s) {
-//                                        super.onPostExecute(s);
-//
-//                                        if (s == null) {
-//                                            done = true;
-//                                            Toast.makeText(getBaseContext(), "No audio found", Toast.LENGTH_LONG).show();
-//                                        } else {
-//                                            final MediaPlayer mp = new MediaPlayer();
-//                                            try {
-//                                                mp.setDataSource(s);
-//                                                mp.prepareAsync();
-//                                                mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//                                                    @Override
-//                                                    public void onPrepared(MediaPlayer mp) {
-//                                                        done = true;
-//                                                        mp.start();
-//                                                    }
-//                                                });
-//                                                mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//                                                    @Override
-//                                                    public void onCompletion(MediaPlayer mediaPlayer) {
-//                                                        if (mp != null)
-//                                                            mp.release();
-//                                                    }
-//                                                });
-//
-//                                            } catch (IOException e) {
-//                                            }
-//                                        }
-//
-//
-//                                    }
-//                                }.execute(mAdapter.getItem(position));
+//                                    ttobj.speak(mAdapter.getItem(position), TextToSpeech.QUEUE_FLUSH, null, String.valueOf(System.currentTimeMillis()));
+//                                } else {
+//                                    ttobj.speak(mAdapter.getItem(position), TextToSpeech.QUEUE_FLUSH, null);
+//                                }
 //
 //                            }
 //                        });
 //                    }
 //                });
-//                mDialog.show();
-//                dialog.cancel();
-//                super.onPostExecute(s);
-//            }
-//        }.execute(mAdapter.getItem(position));
+                mDialog.show();
+                dialog.cancel();
+                super.onPostExecute(s);
+            }
+        }.execute(mAdapter.getItem(position));
         dialog = builder.create();
         dialog.show();
     }
-
-    boolean done = false;
 
     @Override
     protected void onDestroy() {
@@ -350,19 +281,17 @@ public class AddWords extends AppCompatActivity {
     @Override
     protected void onPause() {
         File mFile = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/" + Utils.SessionFile);
-        if(mFile.exists())
+        if (mFile.exists())
             Utils.writeListToFile(sessionList, Utils.SessionFile);
         super.onPause();
     }
 
-    public void addToSessionList(String wordtoadd){
+    public void addToSessionList(String wordtoadd) {
         File mFile = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/" + Utils.SessionFile);
-        if(mFile.exists()){
+        if (mFile.exists()) {
             sessionList.add(wordtoadd);
         }
     }
-
-    ArrayList<String> sessionList = new ArrayList<String>();
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

@@ -83,32 +83,44 @@
         android:text="@string/hello_world"
         android:textSize="40sp" />
 
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/bMeaning"
         android:layout_below="@+id/tvWord"
         android:layout_centerHorizontal="true"
-        android:fadeScrollbars="false">
+        android:id="@+id/flWordsContainer">
 
-        <TextView
-            android:id="@+id/tvMeaning"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="5dp"
-            android:text="@string/hello_world"
-            android:textColor="#fff"
-            android:textSize="18sp" />
+    </FrameLayout>
 
-    </ScrollView>
+    <!--<ScrollView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_above="@+id/bMeaning"-->
+        <!--android:layout_below="@+id/tvWord"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:fadeScrollbars="false">-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/tvMeaning"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:paddingTop="5dp"-->
+            <!--android:text="@string/hello_world"-->
+            <!--android:textColor="#fff"-->
+            <!--android:textSize="18sp" />-->
+
+    <!--</ScrollView>-->
 
 
-    <ProgressBar
+    <FrameLayout
         android:id="@+id/pbMeaning"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:indeterminateOnly="true" />
+        android:layout_centerInParent="true">
+
+
+    </FrameLayout>
 
     <Button
         android:id="@+id/bMeaning"
@@ -116,7 +128,6 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/bYes"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
         android:text="Show Meaning" />
 
 

@@ -1,6 +1,5 @@
 package com.sachinshinde.wordlearner;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -155,13 +154,6 @@ public class MyActivity extends AppCompatActivity {
                         if(oldList != null)
                             newWordList.addAll(oldList);
 
-
-                        // add elements to al, including duplicates
-                        Set<String> hs = new HashSet<>();
-                        hs.addAll(newWordList);
-                        newWordList.clear();
-                        newWordList.addAll(hs);
-
                         Utils.writeListToFile(newWordList, Utils.WordsFile);
 
                     } catch (URISyntaxException e) {
@@ -253,7 +245,7 @@ public class MyActivity extends AppCompatActivity {
                         bufferedWriter.write(Utils.getDefinition(s));
                     } else {
                         Log.d("WordLearner", "Loading from wordnik");
-                        bufferedWriter.write(Utils.saveWord(s, Utils.jsonToString(NetworkUtils.GET(Utils.URL1 + s.trim().toLowerCase(Locale.US) + Utils.URL2))));
+                        bufferedWriter.write(Utils.saveWord(s, Utils.jsonToWordNikString(NetworkUtils.GET(Utils.URL1 + s.trim().toLowerCase(Locale.US) + Utils.URL2))));
                     }
                     bufferedWriter.newLine();
                 }

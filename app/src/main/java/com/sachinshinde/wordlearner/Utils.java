@@ -1,8 +1,24 @@
 package com.sachinshinde.wordlearner;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Environment;
+import android.os.Handler;
+import android.text.Html;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.sachinshinde.wordlearner.module.Meaning;
+import com.sachinshinde.wordlearner.module.SubWords;
+import com.sachinshinde.wordlearner.module.Word;
+import com.sachinshinde.wordlearner.utils.ProcessWord;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +40,8 @@ public class Utils {
 
     public static final String WordsFile = "WordList";
     public static final String SessionFile = "Session";
+    public static final String FINAL_URL_SINGLE = "http://my-dictionary-api.appspot.com/getMeaning?word=";
+    public static final String FINAL_URL_MULTIPLE = "http://my-dictionary-api.appspot.com/getMultiMeaning";
 
 
     public static void writeListToFile(ArrayList<String> list, String FileName) {
@@ -75,6 +93,7 @@ public class Utils {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
         Set<String> set = new TreeSet<String>();
         set.addAll(list);
@@ -83,7 +102,7 @@ public class Utils {
         return list;
     }
 
-    public static String jsonToString(String jsonString) {
+    public static String jsonToWordNikString(String jsonString) {
         String string = "";
         try {
             JSONArray jsonArray = new JSONArray(jsonString);
@@ -133,6 +152,29 @@ public class Utils {
         return definition;
     }
 
+    public static String getWordJSON(String word) {
+        word = word.trim().toLowerCase(Locale.getDefault());
+        File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
+        if(!mDir.exists()){
+            mDir.mkdirs();
+        }
+        File mFile = new File(mDir.getPath() + "/" + word);
+        String definition = "";
+        try {
+            if (mFile.exists()) {
+                FileInputStream fis = new FileInputStream(mFile);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                definition = (String) ois.readObject();
+                fis.close();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return definition;
+    }
+
     public static String saveWord(String word, String definition) {
         word = word.trim().toLowerCase(Locale.getDefault());
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
@@ -152,4 +194,139 @@ public class Utils {
         }
         return definition;
     }
+
+    public static View getMeaningsView(String definition, Context mContext){
+
+        try {
+            Word word = ProcessWord.getDefinition(definition);
+
+            View mainView = LayoutInflater.from(mContext).inflate(R.layout.meaning_dialog, null);
+            LinearLayout wordsContainer = (LinearLayout) mainView.findViewById(R.id.wordsContainer);
+
+            ArrayList<SubWords> subWords = word.getWords();
+
+            for (int x = 0 ; x < subWords.size() ; x++) {
+
+                SubWords subWord = subWords.get(x);
+
+                View meaningsViewContainer = LayoutInflater.from(mContext).inflate(R.layout.meaning_container, null);
+
+                ((TextView) meaningsViewContainer.findViewById(R.id.tvWord)).setText(Html.fromHtml(subWord.getWord()));
+                ((TextView) meaningsViewContainer.findViewById(R.id.tvWordType)).setText(Html.fromHtml(subWord.getType()));
+                ((TextView) meaningsViewContainer.findViewById(R.id.tvWordForm)).setText(Html.fromHtml(subWord.getForm()));
+
+                LinearLayout meaningsContainer = (LinearLayout) meaningsViewContainer.findViewById(R.id.meaningsContainer);
+
+                ArrayList<Meaning> meanings = subWord.getMeanings();
+                for (int i = 0; i < meanings.size(); i++) {
+                    Meaning meaning = meanings.get(i);
+                    View meaningItemView = LayoutInflater.from(mContext).inflate(R.layout.meaning_item, null);
+
+                    ((TextView) meaningItemView.findViewById(R.id.tvWordIndex)).setText((i + 1) + ".");
+                    ((TextView) meaningItemView.findViewById(R.id.tvWordMeaning)).setText(Html.fromHtml(meaning.getMeaning() != null ? meaning.getMeaning() : ""));
+                    ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText(Html.fromHtml(meaning.getExamples().toString().replace("[", "").replace("]", "")));
+                    if (meaning.getSynonyms() != null)
+                        ((TextView) meaningItemView.findViewById(R.id.tvSynonyms)).setText(Html.fromHtml(meaning.getSynonyms().toString().replace("[", "").replace("]", "")));
+                    else
+                        meaningItemView.findViewById(R.id.synonymsContainer).setVisibility(View.GONE);
+
+                    if (meaning.getAntonyms() != null)
+                        ((TextView) meaningItemView.findViewById(R.id.tvAntonyms)).setText(Html.fromHtml(meaning.getAntonyms().toString().replace("[", "").replace("]", "")));
+                    else
+                        meaningItemView.findViewById(R.id.antonymsContainer).setVisibility(View.GONE);
+
+                    meaningsContainer.addView(meaningItemView);
+                }
+
+
+                if (x == subWords.size() - 1) {
+                    meaningsViewContainer.findViewById(R.id.divider).setVisibility(View.GONE);
+                }
+
+                wordsContainer.addView(meaningsViewContainer);
+            }
+
+            return mainView;
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+
+    public static View getProgressView(Activity activity){
+//        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        final View view = LayoutInflater.from(activity).inflate(
+                R.layout.progress_dialog, null);
+        View img1 = view.findViewById(R.id.pd_circle1);
+        View img2 = view.findViewById(R.id.pd_circle2);
+        View img3 = view.findViewById(R.id.pd_circle3);
+        int ANIMATION_DURATION = 400;
+        Animator anim1 = setRepeatableAnim(activity, img1, ANIMATION_DURATION, R.animator.growndisappear);
+        Animator anim2 = setRepeatableAnim(activity, img2, ANIMATION_DURATION, R.animator.growndisappear);
+        Animator anim3 = setRepeatableAnim(activity, img3, ANIMATION_DURATION, R.animator.growndisappear);
+        setListeners(img1, anim1, anim2, ANIMATION_DURATION);
+        setListeners(img2, anim2, anim3, ANIMATION_DURATION);
+        setListeners(img3, anim3, anim1, ANIMATION_DURATION);
+        anim1.start();
+//        builder.setView(view);
+//        AlertDialog ad = builder.create();
+//        ad.setCanceledOnTouchOutside(false);
+//        ad.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+//        ad.show();
+//        ad.getWindow().setLayout(dpToPx(200, activity), dpToPx(125, activity));
+        return view;
+    }
+
+    public static int dpToPx(int i, Context mContext) {
+
+        DisplayMetrics displayMetrics = mContext.getResources()
+                .getDisplayMetrics();
+        return (int) ((i * displayMetrics.density) + 0.5);
+
+    }
+
+    private static Animator setRepeatableAnim(Activity activity, View target, final int duration, int animRes){
+        final Animator anim = AnimatorInflater.loadAnimator(activity, animRes);
+        anim.setDuration(duration);
+        anim.setTarget(target);
+        return anim;
+    }
+
+    private static void setListeners(final View target, Animator anim, final Animator animator, final int duration){
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animat) {
+                if(target.getVisibility() == View.INVISIBLE){
+                    target.setVisibility(View.VISIBLE);
+                }
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        animator.start();
+                    }
+                }, duration - 100);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
+    }
+
 }
