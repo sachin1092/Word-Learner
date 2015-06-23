@@ -58,18 +58,37 @@
             android:focusable="true"
             android:focusableInTouchMode="true" />
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/rlAddWords"
+            android:layout_marginTop="5dp"
+            android:layout_below="@+id/view">
+
         <EditText
             android:id="@+id/etAddWords"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/view"
-            android:layout_marginTop="5dp"
             android:backgroundTint="@color/colorPrimaryText"
             android:textColor="@color/colorPrimaryText"
             android:hint="Search..."
             android:nextFocusLeft="@id/etAddWords"
             android:nextFocusUp="@id/etAddWords" />
 
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:padding="5dp"
+            android:layout_marginRight="5dp"
+            android:id="@+id/ivAddWords"
+            android:visibility="gone"
+            android:clickable="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_close"/>
+
+        </RelativeLayout>
         <!--<Button-->
         <!--android:id="@+id/bAddWords"-->
         <!--android:layout_width="match_parent"-->
@@ -82,7 +101,7 @@
             android:id="@+id/lvWords"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/etAddWords"
+            android:layout_below="@+id/rlAddWords"
             android:layout_margin="5dp"
             android:fastScrollAlwaysVisible="true"
             android:fastScrollEnabled="true">

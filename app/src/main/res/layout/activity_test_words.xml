@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.sachinshinde.wordlearner.TestWords">
+    tools:context="com.sachinshinde.wordlearner.TestWordsActivity">
 
 
     <ImageButton
@@ -19,7 +19,7 @@
         android:background="@drawable/main_button_blue"
         android:padding="8dp"
         android:scaleType="fitCenter"
-        android:src="@drawable/speaker" />
+        android:src="@drawable/ic_volume_high" />
 
     <ProgressBar
         android:id="@+id/pbVoice"
@@ -83,15 +83,22 @@
         android:text="@string/hello_world"
         android:textSize="40sp" />
 
-    <FrameLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/bMeaning"
         android:layout_below="@+id/tvWord"
         android:layout_centerHorizontal="true"
+        >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
         android:id="@+id/flWordsContainer">
 
     </FrameLayout>
+    </ScrollView>
 
     <!--<ScrollView-->
         <!--android:layout_width="match_parent"-->

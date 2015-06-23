@@ -129,6 +129,16 @@ public class Utils {
         return mFile.exists();
     }
 
+    public static boolean deleteWord(String word) {
+        word = word.trim().toLowerCase(Locale.getDefault());
+        File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
+        if(!mDir.exists()){
+            mDir.mkdirs();
+        }
+        File mFile = new File(mDir.getPath() + "/" + word.trim().toLowerCase(Locale.getDefault()));
+        return mFile.delete();
+    }
+
     public static String getDefinition(String word) {
         word = word.trim().toLowerCase(Locale.getDefault());
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
@@ -224,7 +234,12 @@ public class Utils {
 
                     ((TextView) meaningItemView.findViewById(R.id.tvWordIndex)).setText((i + 1) + ".");
                     ((TextView) meaningItemView.findViewById(R.id.tvWordMeaning)).setText(Html.fromHtml(meaning.getMeaning() != null ? meaning.getMeaning() : ""));
-                    ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText(Html.fromHtml(meaning.getExamples().toString().replace("[", "").replace("]", "")));
+
+                    if(meaning.getExamples() != null)
+                        ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText(Html.fromHtml(meaning.getExamples().toString().replace("[", "").replace("]", "")));
+                    else
+                        ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText("");
+
                     if (meaning.getSynonyms() != null)
                         ((TextView) meaningItemView.findViewById(R.id.tvSynonyms)).setText(Html.fromHtml(meaning.getSynonyms().toString().replace("[", "").replace("]", "")));
                     else
@@ -251,6 +266,7 @@ public class Utils {
 
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e("Error Utils", e.getMessage());
         }
 
         return null;
@@ -259,7 +275,6 @@ public class Utils {
 
 
     public static View getProgressView(Activity activity){
-//        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         final View view = LayoutInflater.from(activity).inflate(
                 R.layout.progress_dialog, null);
         View img1 = view.findViewById(R.id.pd_circle1);
@@ -273,12 +288,6 @@ public class Utils {
         setListeners(img2, anim2, anim3, ANIMATION_DURATION);
         setListeners(img3, anim3, anim1, ANIMATION_DURATION);
         anim1.start();
-//        builder.setView(view);
-//        AlertDialog ad = builder.create();
-//        ad.setCanceledOnTouchOutside(false);
-//        ad.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
-//        ad.show();
-//        ad.getWindow().setLayout(dpToPx(200, activity), dpToPx(125, activity));
         return view;
     }
 

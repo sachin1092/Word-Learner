@@ -11,7 +11,7 @@
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
         <activity
-            android:name=".MyActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,11 +20,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddWords"
+            android:name=".AddWordsActivity"
             android:label="@string/title_activity_add_words" >
         </activity>
         <activity
-            android:name=".TestWords"
+            android:name=".TestWordsActivity"
             android:label="@string/title_activity_test_words" >
         </activity>
         <!--Include the AdActivity configChanges and theme. -->
