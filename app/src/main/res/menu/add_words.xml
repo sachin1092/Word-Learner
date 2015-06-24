@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
+    <group
         android:id="@+id/action_sort"
+        android:checkableBehavior="single"
         android:title="@string/sort"
-        android:icon="@drawable/ic_sort"
-        app:showAsAction="always" />
+        app:showAsAction="always">
+
+        <item
+            android:id="@+id/action_AtoZ"
+            android:checked="true"
+            android:title="@string/atoz" />
+        <item
+            android:id="@+id/action_ZtoA"
+            android:title="@string/ztoa" />
+        <item
+            android:id="@+id/action_MostRevisedFirst"
+            android:title="@string/mostrevisedfirst" />
+
+    </group>
+
+
 </menu>

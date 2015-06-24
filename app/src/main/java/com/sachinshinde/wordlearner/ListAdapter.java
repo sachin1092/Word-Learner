@@ -22,50 +22,36 @@ public class ListAdapter extends ArrayAdapter<String> implements SectionIndexer 
     private static String sections = "abcdefghilmnopqrstuvwxyz".toUpperCase(Locale.getDefault());
     HashMap<String, Integer> mapIndex;
     //    String[] sections;
-    List<String> fruits;
+    List<String> wordList;
     ArrayList<String> mList;
+    private int sortMode;
 
-    public ListAdapter(Context context, List<String> fruitList) {
-        super(context, R.layout.list_item, fruitList);
+    public ListAdapter(Context context, List<String> wordList, int sortMode) {
+        super(context, R.layout.list_item, wordList);
 
-        this.fruits = fruitList;
+        this.wordList = wordList;
         this.mList = new ArrayList<String>();
-        this.mList.addAll(this.fruits);
-        mapIndex = new LinkedHashMap<String, Integer>();
+        this.mList.addAll(this.wordList);
 
-        for (int x = 0; x < fruits.size(); x++) {
-            String fruit = fruits.get(x);
-            String ch = fruit.substring(0, 1);
-            ch = ch.toUpperCase(Locale.US);
 
-            // HashMap will prevent duplicates
-            mapIndex.put(ch, x);
-        }
-
-        Set<String> sectionLetters = mapIndex.keySet();
-
-        // create a list from the set to sort
-        ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
-
-        Log.d("sectionList", sectionList.toString());
-        Collections.sort(sectionList);
 
 //        sections = new String[sectionList.size()];
 
 //        sectionList.toArray(sections);
+        setSortMode(sortMode);
     }
 
 
     // Filter Class
     public void filter(String charText) {
         charText = charText.toLowerCase(Locale.getDefault());
-        fruits.clear();
+        wordList.clear();
         if (charText.length() == 0) {
-            fruits.addAll(mList);
+            wordList.addAll(mList);
         } else {
             for (String wp : mList) {
                 if (wp.toLowerCase(Locale.getDefault()).contains(charText)) {
-                    fruits.add(wp);
+                    wordList.add(wp);
                 }
             }
         }
@@ -123,5 +109,43 @@ public class ListAdapter extends ArrayAdapter<String> implements SectionIndexer 
 
         return sectionsArr;
 
+    }
+
+    public void setSortMode(int sortMode) {
+        this.sortMode = sortMode;
+        mapIndex = new LinkedHashMap<String, Integer>();
+
+        for (int x = 0; x < this.wordList.size(); x++) {
+            String fruit = this.wordList.get(x);
+            String ch = fruit.substring(0, 1);
+            ch = ch.toUpperCase(Locale.US);
+
+            // HashMap will prevent duplicates
+            mapIndex.put(ch, x);
+        }
+
+        Set<String> sectionLetters = mapIndex.keySet();
+
+
+        // create a list from the set to sort
+        ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
+        Log.d("sectionList", sectionList.toString());
+        switch (sortMode){
+            case 0:
+                sections = "abcdefghilmnopqrstuvwxyz".toUpperCase(Locale.getDefault());
+                Collections.sort(sectionList);
+                Collections.sort(wordList);
+                break;
+            case 1:
+                sections = "zyxwvutsrqponmlihgfedcba".toUpperCase(Locale.getDefault());
+                Collections.sort(sectionList);
+                Collections.reverse(sectionList);
+                Collections.sort(wordList);
+                Collections.reverse(wordList);
+                break;
+            case 2:
+                break;
+        }
+        notifyDataSetChanged();
     }
 }

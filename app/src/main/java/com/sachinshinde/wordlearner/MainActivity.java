@@ -24,6 +24,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.sachinshinde.wordlearner.activities.AboutClass;
+
+import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -33,15 +36,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        DirectoryChooserFragment.OnFragmentInteractionListener {
+
+    private DirectoryChooserFragment mDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mDialog = DirectoryChooserFragment.newInstance("Word Learner", null);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -69,10 +76,10 @@ public class MainActivity extends AppCompatActivity {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Select Session");
-                builder.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, new String[] {"New session", "Resume old session"}), new DialogInterface.OnClickListener() {
+                builder.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, new String[]{"New session", "Resume old session"}), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if(i == 0){
+                        if (i == 0) {
                             startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.WordsFile));
                         } else {
                             startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.SessionFile));
@@ -80,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 File mFile = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/" + Utils.SessionFile);
-                if(mFile.exists())
+                if (mFile.exists())
                     builder.show();
                 else
                     startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.WordsFile));
@@ -90,15 +97,15 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.buttonExport).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new ExportWords().execute();
+                mDialog.show(getFragmentManager(), null);
             }
         });
 
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
         File mFile = new File(mDir.getPath() + "/" + Utils.WordsFile);
-        if(!mFile.exists()){
+        if (!mFile.exists()) {
             ArrayList<String> list = SerialPreference.retPrefs(getBaseContext());
-            if(list != null){
+            if (list != null) {
                 Utils.writeListToFile(list, Utils.WordsFile);
             }
         }
@@ -149,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getBaseContext(), path, Toast.LENGTH_LONG).show();
                         ArrayList<String> newWordList = parseFile(path);
                         ArrayList<String> oldList = Utils.loadListFromFile(Utils.WordsFile);
-                        if(oldList != null)
+                        if (oldList != null)
                             newWordList.addAll(oldList);
 
                         Utils.writeListToFile(newWordList, Utils.WordsFile);
@@ -169,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static String getPath(Context context, Uri uri) throws URISyntaxException {
         if ("content".equalsIgnoreCase(uri.getScheme())) {
-            String[] projection = { "_data" };
+            String[] projection = {"_data"};
             Cursor cursor = null;
 
             try {
@@ -181,21 +188,19 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 // Eat it
             }
-        }
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
             return uri.getPath();
         }
 
         return null;
     }
 
-    public ArrayList<String> parseFile(String path){
+    public ArrayList<String> parseFile(String path) {
         ArrayList<String> list = new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(path));
             String line;
-            while ((line = reader.readLine()) != null)
-            {
+            while ((line = reader.readLine()) != null) {
                 list.add(line);
             }
             reader.close();
@@ -206,6 +211,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class ExportWords extends AsyncTask<String, Void, String> {
+
+        String path;
+
+        public ExportWords(String path) {
+            this.path = path;
+        }
 
 
         @Override
@@ -222,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
             ArrayList<String> word_list = Utils.loadListFromFile(Utils.WordsFile);
-            File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
+            File mDir = new File(path);
             File mFile = new File(mDir.getPath() + "/Exported List.txt");
             try {
                 // Assume default encoding.
@@ -235,23 +246,26 @@ public class MainActivity extends AppCompatActivity {
 
                 // Note that write() does not automatically
                 // append a newline character.
-                for(String s : word_list){
-                    bufferedWriter.write(s);
-                    bufferedWriter.write(": ");
-                    if (Utils.hasWord(s)) {
-                        Log.d("WordLearner", "Loading from memory");
-                        bufferedWriter.write(Utils.getDefinition(s));
-                    } else {
-                        Log.d("WordLearner", "Loading from wordnik");
-                        bufferedWriter.write(Utils.saveWord(s, Utils.jsonToWordNikString(NetworkUtils.GET(Utils.URL1 + s.trim().toLowerCase(Locale.US) + Utils.URL2))));
-                    }
+                for (int i = 0; i < word_list.size(); i++) {
+                    bufferedWriter.write(word_list.get(i));
+//                    bufferedWriter.write(": ");
+//                    if (Utils.hasWord(s)) {
+//                        Log.d("WordLearner", "Loading from memory");
+//                        try {
+//                            bufferedWriter.write(Utils.getDefinition(s));
+//                        }catch (Exception ex){
+//                            ex.printStackTrace();
+//                        }
+//                    } else {
+//                        Log.d("WordLearner", "Loading from wordnik");
+//                        bufferedWriter.write(Utils.saveWord(s, NetworkUtils.GET(Utils.FINAL_URL_SINGLE + s.trim().toLowerCase(Locale.US))));
+//                    }
                     bufferedWriter.newLine();
                 }
                 Log.d("WordLearner", "Export completed");
                 // Always close files.
                 bufferedWriter.close();
-            }
-            catch(IOException ex) {
+            } catch (IOException ex) {
                 System.out.println(
                         "Error writing to file '"
                                 + "Exported List.txt" + "'");
@@ -276,8 +290,50 @@ public class MainActivity extends AppCompatActivity {
             case android.R.id.home:
                 finish();
                 return true;
+            case R.id.action_about:
+                startActivity(new Intent(getBaseContext(), AboutClass.class));
+                overridePendingTransition(R.anim.slide_in_left,
+                        R.anim.slide_out_right);
+                return true;
+            case R.id.action_morebydev:
+                startActivity(new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/developer?id=sachin+shinde")));
+                return true;
+            case R.id.action_rate:
+                Utils.launchMarket(getBaseContext(), getPackageName());
+                return true;
+            case R.id.action_share:
+                startActivity(createShareIntent());
+                return true;
+            case R.id.action_gopro:
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private Intent createShareIntent() {
+        final Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+
+        intent.putExtra(
+                Intent.EXTRA_TEXT,
+                "Checkout this Amazing App\nWord Learner\nGet it now from Playstore\n"
+                        + Uri.parse("http://play.google.com/store/apps/details?id="
+                        + getPackageName()));
+
+        return Intent.createChooser(intent, "Share");
+    }
+
+    @Override
+    public void onSelectDirectory(String path) {
+        new ExportWords(path).execute();
+        mDialog.dismiss();
+    }
+
+    @Override
+    public void onCancelChooser() {
+        mDialog.dismiss();
     }
 
 }

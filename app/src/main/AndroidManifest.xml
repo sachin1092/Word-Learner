@@ -21,6 +21,7 @@
         </activity>
         <activity
             android:name=".AddWordsActivity"
+            android:theme="@style/Theme.AddActivity"
             android:label="@string/title_activity_add_words" >
         </activity>
         <activity
@@ -31,6 +32,8 @@
         <activity android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
             android:theme="@android:style/Theme.Translucent" />
+
+        <activity android:name=".activities.AboutClass"/>
     </application>
 
     <uses-permission android:name="android.permission.INTERNET"/>

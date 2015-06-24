@@ -30,4 +30,5 @@ dependencies {
     compile 'com.android.support:cardview-v7:22.2.0'
     compile 'com.android.support:recyclerview-v7:22.2.0'
     compile 'com.google.android.gms:play-services-ads:7.5.0'
+    compile 'net.rdrei.android.dirchooser:library:2.1@aar'
 }

@@ -1,7 +1,10 @@
 package com.sachinshinde.wordlearner;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -23,8 +26,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,6 +52,42 @@ public class TestWordsActivity extends AppCompatActivity {
     GetMeaning getMeaning;
     private TextToSpeech ttobj;
 
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction() != null) {
+                if (intent.getAction().equalsIgnoreCase(Utils.INTENT_ADD_WORD)) {
+                    Toast.makeText(getBaseContext(), "Added " + intent.getStringExtra("WORD"), Toast.LENGTH_LONG).show();
+                    addWord(intent.getStringExtra("WORD"));
+                } else if (intent.getAction().equalsIgnoreCase(Utils.INTENT_DELETE_WORD)) {
+
+                    deleteWord(intent.getStringExtra("WORD"));
+                }
+            }
+        }
+    };
+
+    private void deleteWord(String word) {
+        Utils.deleteWord(word);
+        words.remove(word);
+        Utils.writeListToFile(words, Utils.SessionFile);
+        ArrayList<String> toSave = Utils.loadListFromFile(Utils.WordsFile);
+        toSave.remove(word);
+        Collections.sort(toSave);
+        Utils.writeListToFile(toSave, Utils.WordsFile);
+        ((TextView) findViewById(R.id.tvCount)).setText(words.size() + " WORDS TO GO.");
+    }
+
+    private void addWord(String word) {
+        words.add(word);
+        Utils.writeListToFile(words, Utils.SessionFile);
+        ArrayList<String> toSave = Utils.loadListFromFile(Utils.WordsFile);
+        toSave.add(word);
+        Collections.sort(toSave);
+        Utils.writeListToFile(toSave, Utils.WordsFile);
+        ((TextView) findViewById(R.id.tvCount)).setText(words.size() + " WORDS TO GO.");
+    }
+
     @Override
     protected void onRestart() {
         words = Utils.loadListFromFile(Utils.SessionFile);
@@ -60,6 +103,17 @@ public class TestWordsActivity extends AppCompatActivity {
         else
             PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putInt("LastIndex", 0).commit();
         super.onPause();
+        unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Utils.INTENT_ADD_WORD);
+        intentFilter.addAction(Utils.INTENT_DELETE_WORD);
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
     @Override
@@ -234,6 +288,9 @@ public class TestWordsActivity extends AppCompatActivity {
             }
         });
 
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     AlertDialog mDialog;
@@ -253,6 +310,7 @@ public class TestWordsActivity extends AppCompatActivity {
 
     public class GetMeaning extends AsyncTask<String, Void, String> {
 
+        String word;
 
         @Override
         protected void onPreExecute() {
@@ -274,14 +332,26 @@ public class TestWordsActivity extends AppCompatActivity {
 //            findViewById(R.id.tvMeaning).setVisibility(View.VISIBLE);
 
             View mView = Utils.getMeaningsView(s, TestWordsActivity.this);
-            if(mView != null)
-                ((FrameLayout)findViewById(R.id.flWordsContainer)).addView(mView);
-            else
+            findViewById(R.id.flWordsContainer).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    ((ScrollView) findViewById(R.id.flWordsContainer)).fullScroll(ScrollView.FOCUS_UP);
+                }
+            }, 50);
+            ((ScrollView)findViewById(R.id.flWordsContainer)).removeAllViews();
+
+            if(mView != null) {
+                ((ScrollView) findViewById(R.id.flWordsContainer)).addView(mView);
+
+            } else {
                 Toast.makeText(TestWordsActivity.this, "Oops! An error occurred. Try Again.", Toast.LENGTH_LONG).show();
+                Utils.deleteWord(this.word);
+            }
         }
 
         @Override
         protected String doInBackground(String... strings) {
+            this.word = strings[0];
             if (Utils.hasWord(strings[0])) {
                 Log.d("WordLearner", "Loading from memory");
                 return Utils.getWordJSON(strings[0]);
@@ -470,4 +540,6 @@ public class TestWordsActivity extends AppCompatActivity {
     }
 
     boolean done = false;
+
+
 }
