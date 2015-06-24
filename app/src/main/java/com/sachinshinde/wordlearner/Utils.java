@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -78,6 +79,7 @@ public class Utils {
                 list.add(item);
 
         }
+
 
         if (null == FileName)
             throw new RuntimeException("FileName is null!");
@@ -335,14 +337,14 @@ public class Utils {
 
     }
 
-    private static Animator setRepeatableAnim(Activity activity, View target, final int duration, int animRes){
+    public static Animator setRepeatableAnim(Activity activity, View target, final int duration, int animRes){
         final Animator anim = AnimatorInflater.loadAnimator(activity, animRes);
         anim.setDuration(duration);
         anim.setTarget(target);
         return anim;
     }
 
-    private static void setListeners(final View target, Animator anim, final Animator animator, final int duration){
+    public static void setListeners(final View target, Animator anim, final Animator animator, final int duration){
         anim.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animat) {
@@ -549,6 +551,37 @@ public class Utils {
                             + packageName))
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         }
+    }
+
+    public static AlertDialog getProgressDialog(Activity activity, String msg){
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        final View view = LayoutInflater.from(activity).inflate(
+                R.layout.progress_dialog, null);
+        View img1 = view.findViewById(R.id.pd_circle1);
+        View img2 = view.findViewById(R.id.pd_circle2);
+        View img3 = view.findViewById(R.id.pd_circle3);
+        int ANIMATION_DURATION = 400;
+        Animator anim1 = setRepeatableAnim(activity, img1, ANIMATION_DURATION, R.animator.growndisappear);
+        Animator anim2 = setRepeatableAnim(activity, img2, ANIMATION_DURATION, R.animator.growndisappear);
+        Animator anim3 = setRepeatableAnim(activity, img3, ANIMATION_DURATION, R.animator.growndisappear);
+        setListeners(img1, anim1, anim2, ANIMATION_DURATION);
+        setListeners(img2, anim2, anim3, ANIMATION_DURATION);
+        setListeners(img3, anim3, anim1, ANIMATION_DURATION);
+        anim1.start();
+
+        ((TextView) view.findViewById(R.id.tvMessage)).setText(Html.fromHtml(msg));
+
+        builder.setView(view);
+        AlertDialog ad = builder.create();
+        ad.setCanceledOnTouchOutside(false);
+        try {
+            ad.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        ad.show();
+//        ad.getWindow().setLayout(dpToPx(200, activity), dpToPx(125, activity));
+        return ad;
     }
 
 }

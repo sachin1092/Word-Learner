@@ -45,6 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Loading..."
+        android:id="@+id/tvMessage"
         android:textSize="20sp"
         android:layout_gravity="center"
         android:gravity="center"

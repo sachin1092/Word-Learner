@@ -1,5 +1,7 @@
 package com.sachinshinde.wordlearner;
 
+import android.animation.Animator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,18 +12,19 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.support.v4.content.CursorLoader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -31,6 +34,9 @@ import com.sachinshinde.wordlearner.utils.FilePath;
 
 import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,13 +45,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity implements
         DirectoryChooserFragment.OnFragmentInteractionListener {
 
     private DirectoryChooserFragment mDialog;
+    private android.support.v7.app.AlertDialog mImportDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showFileChooser() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
+        intent.setType("text/plain");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
 
         try {
@@ -167,17 +178,15 @@ public class MainActivity extends AppCompatActivity implements
                     String path = null;
                     try {
                         path = getPath(this, uri);
-                        if(path == null){
+                        if (path == null) {
 //                            Toast.makeText(MainActivity.this, getRealPathFromURI(uri), Toast.LENGTH_SHORT).show();
                             path = FilePath.getPath(getBaseContext(), uri);
                         }
-                        Toast.makeText(getBaseContext(), "Imported " + path + " Successfully", Toast.LENGTH_LONG).show();
-                        ArrayList<String> newWordList = parseFile(path);
-                        ArrayList<String> oldList = Utils.loadListFromFile(Utils.WordsFile);
-                        if (oldList != null)
-                            newWordList.addAll(oldList);
 
-                        Utils.writeListToFile(newWordList, Utils.WordsFile);
+                        ArrayList<String> newWordList = parseFile(path);
+//
+                        new ImportWords(newWordList).execute();
+                        mImportDialog = getProgressBuilder(MainActivity.this, "<b>Please wait...</b><br/>Downloading definitions", "0 / " + newWordList.size()).show();
 
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
@@ -191,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
 
     public static String getPath(Context context, Uri uri) throws URISyntaxException {
         if ("content".equalsIgnoreCase(uri.getScheme())) {
@@ -214,16 +224,27 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public ArrayList<String> parseFile(String path) {
+        String pattern = "\\.txt$";
+        // Create a Pattern object
+        Pattern r = Pattern.compile(pattern);
+
+        // Now create matcher object.
+        Matcher m = r.matcher(path);
+        if (!m.find()) {
+            Toast.makeText(getBaseContext(), "Only *.txt files are allowed", Toast.LENGTH_LONG).show();
+            return new ArrayList<>();
+        }
         ArrayList<String> list = new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(path));
             String line;
             while ((line = reader.readLine()) != null) {
-                if(line.contains(" ")){
+                if (line.contains(" ")) {
                     String[] lines = line.split(" ");
-                    for (String line1 : lines) if(!line1.isEmpty()) list.add(line1.toLowerCase(Locale.US));
-                }else {
-                    if(!line.isEmpty())
+                    for (String line1 : lines)
+                        if (checkWord(line)) list.add(line1.toLowerCase(Locale.US));
+                } else {
+                    if (checkWord(line))
                         list.add(line.toLowerCase(Locale.US));
                 }
             }
@@ -231,9 +252,155 @@ public class MainActivity extends AppCompatActivity implements
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return list;
     }
 
+    View importDialogView;
+
+    public android.support.v7.app.AlertDialog.Builder getProgressBuilder(Activity activity, String msg, String progress){
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(activity);
+        importDialogView = LayoutInflater.from(activity).inflate(
+                R.layout.import_progress_dialog, null);
+        View img1 = importDialogView.findViewById(R.id.pd_circle1);
+        View img2 = importDialogView.findViewById(R.id.pd_circle2);
+        View img3 = importDialogView.findViewById(R.id.pd_circle3);
+        int ANIMATION_DURATION = 400;
+        Animator anim1 = Utils.setRepeatableAnim(activity, img1, ANIMATION_DURATION, R.animator.growndisappear);
+        Animator anim2 = Utils.setRepeatableAnim(activity, img2, ANIMATION_DURATION, R.animator.growndisappear);
+        Animator anim3 = Utils.setRepeatableAnim(activity, img3, ANIMATION_DURATION, R.animator.growndisappear);
+        Utils.setListeners(img1, anim1, anim2, ANIMATION_DURATION);
+        Utils.setListeners(img2, anim2, anim3, ANIMATION_DURATION);
+        Utils.setListeners(img3, anim3, anim1, ANIMATION_DURATION);
+        anim1.start();
+
+        ((TextView) importDialogView.findViewById(R.id.tvMessage)).setText(Html.fromHtml(msg));
+        ((TextView) importDialogView.findViewById(R.id.tvProgress)).setText(Html.fromHtml(progress));
+
+        builder.setView(importDialogView);
+        builder.setCancelable(false);
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                importDialogView = null;
+            }
+        });
+
+        importDialogView.findViewById(R.id.bMinimise).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mImportDialog.dismiss();
+            }
+        });
+//        android.support.v7.app.AlertDialog ad = builder.create();
+//        ad.setCanceledOnTouchOutside(false);
+//        try {
+//            ad.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+//        }catch (Exception ex){
+//            ex.printStackTrace();
+//        }
+//        ad.show();
+//        ad.getWindow().setLayout(dpToPx(200, activity), dpToPx(125, activity));
+        return builder;
+    }
+
+    public class ImportWords extends AsyncTask<ArrayList<String>, Void, ArrayList<String>> {
+
+        public ArrayList<String> list;
+        private boolean completed = false;
+
+        public ImportWords(ArrayList<String> list) {
+            this.list = list;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected ArrayList<String> doInBackground(ArrayList<String>... arrayLists) {
+            try {
+                if (this.list.size() > 0) {
+                    ArrayList<String> to_downloadList = new ArrayList<>();
+                    to_downloadList.addAll(this.list.subList(0, this.list.size() > 50 ? 49 : this.list.size() - 1));
+                    this.list.removeAll(to_downloadList);
+
+                    if (to_downloadList.size() == 0) {
+                        completed = true;
+                        return null;
+                    }
+
+                    JSONArray jsonArray = new JSONArray();
+                    for (String word : to_downloadList) {
+//                        if (!Utils.hasWord(word))
+                            jsonArray.put(word);
+                    }
+
+
+                    JSONObject jsonObject = new JSONObject(NetworkUtils.POST(jsonArray.toString(), getBaseContext(), 0));
+
+                    ArrayList<String> response = new ArrayList<>();
+
+                    Iterator<String> itr = jsonObject.keys();
+                    while (itr.hasNext()) {
+                        try {
+                            String word = itr.next().toLowerCase(Locale.US).trim();
+                            Utils.saveWord(word, jsonObject.getJSONObject(word).toString());
+                            response.add(word);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+
+                    return response;
+
+
+                } else {
+                    completed = true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> strings) {
+            super.onPostExecute(strings);
+            if (!completed) {
+                if (strings != null) {
+                    ArrayList<String> oldList = Utils.loadListFromFile(Utils.WordsFile);
+                    if (oldList != null)
+                        strings.addAll(oldList);
+
+                    Utils.writeListToFile(strings, Utils.WordsFile);
+                }
+                new ImportWords(this.list).execute();
+                if(importDialogView != null) {
+                    String progress = ((TextView) importDialogView.findViewById(R.id.tvProgress)).getText().toString();
+                    int prog = Integer.parseInt(progress.split("/")[0].trim()) + 50;
+                    String prog2 = progress.split("/")[1].trim();
+                    ((TextView) importDialogView.findViewById(R.id.tvProgress)).setText(Html.fromHtml(String.valueOf(prog) + " / " + prog2));
+                }
+            } else {
+                mImportDialog.dismiss();
+                Toast.makeText(getBaseContext(), "Import Successful", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    public boolean checkWord(String str) {
+
+        String pattern = "[a-zA-Z]*";
+
+        // Create a Pattern object
+        Pattern r = Pattern.compile(pattern);
+
+        // Now create matcher object.
+        Matcher m = r.matcher(str);
+        return m.find() && !str.isEmpty() && !Utils.hasWord(str);
+    }
 
     public class ExportWords extends AsyncTask<String, Void, String> {
 
@@ -258,6 +425,7 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         protected String doInBackground(String... strings) {
             ArrayList<String> word_list = Utils.loadListFromFile(Utils.WordsFile);
+            Collections.sort(word_list);
             File mDir = new File(path);
             File mFile = new File(mDir.getPath() + "/Exported List.txt");
             try {

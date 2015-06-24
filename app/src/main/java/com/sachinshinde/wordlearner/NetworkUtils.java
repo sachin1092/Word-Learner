@@ -1,5 +1,7 @@
 package com.sachinshinde.wordlearner;
 
+import android.content.Context;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -14,6 +16,18 @@ import java.net.URL;
  * Created by sachin.shinde on 4/9/14.
  */
 public class NetworkUtils {
+
+    public static String[] POST_URLS = {
+            "http://my-dictionary-api-1.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-2.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-3.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-4.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-5.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-6.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-7.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-8.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-9.appspot.com/getMultiMeaning",
+            "http://my-dictionary-api-10-986.appspot.com/getMultiMeaning"};
 
     public static String GET(String urlStr) {
         InputStream inputStream = null;
@@ -44,9 +58,13 @@ public class NetworkUtils {
         Log.d("JSON request", result);
         return result;
     }
-    public static String POST(String urlStr, String data) {
+    public static String POST(String data, Context mContext, int total) {
+        int index = PreferenceManager.getDefaultSharedPreferences(mContext).getInt("URL_INDEX", 0);
+        String urlStr = POST_URLS[index];
         InputStream inputStream = null;
         Log.d("WordLearner", "Requesting: " + urlStr);
+        Log.d("WordLearner", "Request data: " + data);
+
         String result = "";
         try {
 
@@ -68,6 +86,18 @@ public class NetworkUtils {
 
             inputStream = urlConnection.getInputStream();
 
+            int status = urlConnection.getResponseCode()/100;
+
+            Log.d("Word Learner", "Status " + urlConnection.getResponseCode());
+
+            if(status == 5){
+                total++;
+                if(total == POST_URLS.length)
+                    return "Did not work!";
+                index = (index + 1) % POST_URLS.length;
+                PreferenceManager.getDefaultSharedPreferences(mContext).edit().putInt("URL_INDEX", index).commit();
+                POST(data, mContext, total);
+            }
 
             if (inputStream != null)
                 result = convertInputStreamToString(inputStream);
