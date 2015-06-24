@@ -3,9 +3,11 @@ package com.sachinshinde.wordlearner;
 import android.animation.Animator;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -30,6 +32,7 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.sachinshinde.wordlearner.activities.AboutClass;
+import com.sachinshinde.wordlearner.services.DownloadService;
 import com.sachinshinde.wordlearner.utils.FilePath;
 
 import net.rdrei.android.dirchooser.DirectoryChooserFragment;
@@ -179,27 +182,41 @@ public class MainActivity extends AppCompatActivity implements
                     try {
                         path = getPath(this, uri);
                         if (path == null) {
-//                            Toast.makeText(MainActivity.this, getRealPathFromURI(uri), Toast.LENGTH_SHORT).show();
                             path = FilePath.getPath(getBaseContext(), uri);
                         }
 
-                        ArrayList<String> newWordList = parseFile(path);
-//
-                        new ImportWords(newWordList).execute();
-                        mImportDialog = getProgressBuilder(MainActivity.this, "<b>Please wait...</b><br/>Downloading definitions", "0 / " + newWordList.size()).show();
+                        registerReceiver(mProgressReceivers, new IntentFilter(DownloadService.NOTIFICATION));
+
+                        mImportDialog = getProgressBuilder(MainActivity.this, "<b>Please wait...</b><br/>Downloading definitions", "0 / 100").show();
+
+                        Intent intent = new Intent(this, DownloadService.class);
+                        intent.putExtra(DownloadService.FILEPATH, path);
+                        startService(intent);
 
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
                     Log.d("Word Learner", "File Path: " + path);
-                    // Get the file instance
-                    // File file = new File(path);
-                    // Initiate the upload
                 }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    BroadcastReceiver mProgressReceivers = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int progress = intent.getIntExtra(DownloadService.PROGRESS, 10);
+            int total = intent.getIntExtra(DownloadService.TOTAL, 100);
+            if(importDialogView != null) {
+                ((TextView) importDialogView.findViewById(R.id.tvProgress)).setText(Html.fromHtml(progress + " / " + total));
+            }
+
+            if(intent.getIntExtra(DownloadService.RESULT, DownloadService.RESULT_CANCELED) == DownloadService.RESULT_OK){
+                mImportDialog.dismiss();
+            }
+        }
+    };
 
 
     public static String getPath(Context context, Uri uri) throws URISyntaxException {
@@ -223,38 +240,7 @@ public class MainActivity extends AppCompatActivity implements
         return null;
     }
 
-    public ArrayList<String> parseFile(String path) {
-        String pattern = "\\.txt$";
-        // Create a Pattern object
-        Pattern r = Pattern.compile(pattern);
 
-        // Now create matcher object.
-        Matcher m = r.matcher(path);
-        if (!m.find()) {
-            Toast.makeText(getBaseContext(), "Only *.txt files are allowed", Toast.LENGTH_LONG).show();
-            return new ArrayList<>();
-        }
-        ArrayList<String> list = new ArrayList<>();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(path));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(" ")) {
-                    String[] lines = line.split(" ");
-                    for (String line1 : lines)
-                        if (checkWord(line)) list.add(line1.toLowerCase(Locale.US));
-                } else {
-                    if (checkWord(line))
-                        list.add(line.toLowerCase(Locale.US));
-                }
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return list;
-    }
 
     View importDialogView;
 
@@ -283,6 +269,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
                 importDialogView = null;
+                unregisterReceiver(mProgressReceivers);
             }
         });
 
@@ -292,114 +279,17 @@ public class MainActivity extends AppCompatActivity implements
                 mImportDialog.dismiss();
             }
         });
-//        android.support.v7.app.AlertDialog ad = builder.create();
-//        ad.setCanceledOnTouchOutside(false);
-//        try {
-//            ad.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
-//        }catch (Exception ex){
-//            ex.printStackTrace();
-//        }
-//        ad.show();
-//        ad.getWindow().setLayout(dpToPx(200, activity), dpToPx(125, activity));
         return builder;
     }
 
-    public class ImportWords extends AsyncTask<ArrayList<String>, Void, ArrayList<String>> {
 
-        public ArrayList<String> list;
-        private boolean completed = false;
-
-        public ImportWords(ArrayList<String> list) {
-            this.list = list;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected ArrayList<String> doInBackground(ArrayList<String>... arrayLists) {
-            try {
-                if (this.list.size() > 0) {
-                    ArrayList<String> to_downloadList = new ArrayList<>();
-                    to_downloadList.addAll(this.list.subList(0, this.list.size() > 50 ? 49 : this.list.size() - 1));
-                    this.list.removeAll(to_downloadList);
-
-                    if (to_downloadList.size() == 0) {
-                        completed = true;
-                        return null;
-                    }
-
-                    JSONArray jsonArray = new JSONArray();
-                    for (String word : to_downloadList) {
-//                        if (!Utils.hasWord(word))
-                            jsonArray.put(word);
-                    }
-
-
-                    JSONObject jsonObject = new JSONObject(NetworkUtils.POST(jsonArray.toString(), getBaseContext(), 0));
-
-                    ArrayList<String> response = new ArrayList<>();
-
-                    Iterator<String> itr = jsonObject.keys();
-                    while (itr.hasNext()) {
-                        try {
-                            String word = itr.next().toLowerCase(Locale.US).trim();
-                            Utils.saveWord(word, jsonObject.getJSONObject(word).toString());
-                            response.add(word);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-
-                    return response;
-
-
-                } else {
-                    completed = true;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<String> strings) {
-            super.onPostExecute(strings);
-            if (!completed) {
-                if (strings != null) {
-                    ArrayList<String> oldList = Utils.loadListFromFile(Utils.WordsFile);
-                    if (oldList != null)
-                        strings.addAll(oldList);
-
-                    Utils.writeListToFile(strings, Utils.WordsFile);
-                }
-                new ImportWords(this.list).execute();
-                if(importDialogView != null) {
-                    String progress = ((TextView) importDialogView.findViewById(R.id.tvProgress)).getText().toString();
-                    int prog = Integer.parseInt(progress.split("/")[0].trim()) + 50;
-                    String prog2 = progress.split("/")[1].trim();
-                    ((TextView) importDialogView.findViewById(R.id.tvProgress)).setText(Html.fromHtml(String.valueOf(prog) + " / " + prog2));
-                }
-            } else {
-                mImportDialog.dismiss();
-                Toast.makeText(getBaseContext(), "Import Successful", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    public boolean checkWord(String str) {
-
-        String pattern = "[a-zA-Z]*";
-
-        // Create a Pattern object
-        Pattern r = Pattern.compile(pattern);
-
-        // Now create matcher object.
-        Matcher m = r.matcher(str);
-        return m.find() && !str.isEmpty() && !Utils.hasWord(str);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            importDialogView = null;
+            unregisterReceiver(mProgressReceivers);
+        }catch (Exception ex){}
     }
 
     public class ExportWords extends AsyncTask<String, Void, String> {

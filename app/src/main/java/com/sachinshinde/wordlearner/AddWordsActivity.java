@@ -68,6 +68,12 @@ public class AddWordsActivity extends AppCompatActivity {
                 } else if (intent.getAction().equalsIgnoreCase(Utils.INTENT_DELETE_WORD)) {
 
                     deleteWord(intent.getStringExtra("WORD"));
+                } else if (intent.getAction().equalsIgnoreCase(Utils.INTENT_REFRESH)){
+                    words.clear();
+                    words = Utils.loadListFromFile(Utils.WordsFile);
+                    Collections.sort(words);
+                    ((ListAdapter) lvWords.getAdapter()).notifyDataSetChanged();
+                    ((TextView) findViewById(R.id.tvCount)).setText("Total Count: " + mAdapter.getList().size() + " words");
                 }
             }
         }
@@ -394,6 +400,7 @@ public class AddWordsActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Utils.INTENT_ADD_WORD);
         intentFilter.addAction(Utils.INTENT_DELETE_WORD);
+        intentFilter.addAction(Utils.INTENT_REFRESH);
         registerReceiver(broadcastReceiver, intentFilter);
     }
 

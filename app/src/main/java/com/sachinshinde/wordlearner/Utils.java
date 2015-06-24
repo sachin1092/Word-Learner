@@ -63,6 +63,7 @@ public class Utils {
     public static final String FINAL_URL_MULTIPLE = "http://my-dictionary-api.appspot.com/getMultiMeaning";
     public static final String INTENT_ADD_WORD = "action.wordlearner.ADDWORD";
     public static final String INTENT_DELETE_WORD = "action.wordlearner.DELETEWORD";
+    public static final String INTENT_REFRESH = "action.wordlearner.REFRESHWORD";
 
 
     public static void writeListToFile(ArrayList<String> list, String FileName) {
