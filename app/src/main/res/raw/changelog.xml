@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelog>
+
+    <release
+        releasedate="2013-10-18"
+        version="0.1(beta)"
+        versioncode="2" >
+        <change>
+Initial Release
+
+
+        </change>
+    </release>
+
+</changelog>
