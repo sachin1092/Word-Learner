@@ -22,36 +22,52 @@ public class ListAdapter extends ArrayAdapter<String> implements SectionIndexer 
     private static String sections = "abcdefghilmnopqrstuvwxyz".toUpperCase(Locale.getDefault());
     HashMap<String, Integer> mapIndex;
     //    String[] sections;
-    List<String> wordList;
+    List<String> fruits;
     ArrayList<String> mList;
-    private int sortMode;
 
-    public ListAdapter(Context context, List<String> wordList, int sortMode) {
-        super(context, R.layout.list_item, wordList);
+    public ListAdapter(Context context, List<String> fruitList) {
+        super(context, R.layout.list_item, fruitList);
 
-        this.wordList = wordList;
+        this.fruits = fruitList;
         this.mList = new ArrayList<String>();
-        this.mList.addAll(this.wordList);
+        this.mList.addAll(this.fruits);
+        mapIndex = new LinkedHashMap<String, Integer>();
 
+        for (int x = 0; x < fruits.size(); x++) {
+            try {
+                String fruit = fruits.get(x);
+                String ch = fruit.substring(0, 1);
+                ch = ch.toUpperCase(Locale.US);
 
+                // HashMap will prevent duplicates
+                mapIndex.put(ch, x);
+            } catch (Exception ex){}
+        }
+
+        Set<String> sectionLetters = mapIndex.keySet();
+
+        // create a list from the set to sort
+        ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
+
+        Log.d("sectionList", sectionList.toString());
+        Collections.sort(sectionList);
 
 //        sections = new String[sectionList.size()];
 
 //        sectionList.toArray(sections);
-        setSortMode(sortMode);
     }
 
 
     // Filter Class
     public void filter(String charText) {
         charText = charText.toLowerCase(Locale.getDefault());
-        wordList.clear();
+        fruits.clear();
         if (charText.length() == 0) {
-            wordList.addAll(mList);
+            fruits.addAll(mList);
         } else {
             for (String wp : mList) {
                 if (wp.toLowerCase(Locale.getDefault()).contains(charText)) {
-                    wordList.add(wp);
+                    fruits.add(wp);
                 }
             }
         }
@@ -85,11 +101,13 @@ public class ListAdapter extends ArrayAdapter<String> implements SectionIndexer 
     @Override
     public int getPositionForSection(int section) {
         Log.d("ListView", "Get position for section");
-        for (int i = 0; i < this.getCount(); i++) {
-            String item = this.getItem(i).toUpperCase(Locale.getDefault());
-            if (item.charAt(0) == sections.charAt(section))
-                return i;
-        }
+        try {
+            for (int i = 0; i < this.getCount(); i++) {
+                String item = this.getItem(i).toUpperCase(Locale.getDefault());
+                if (item.charAt(0) == sections.charAt(section))
+                    return i;
+            }
+        }catch (Exception ex){}
         return 0;
     }
 
@@ -109,43 +127,5 @@ public class ListAdapter extends ArrayAdapter<String> implements SectionIndexer 
 
         return sectionsArr;
 
-    }
-
-    public void setSortMode(int sortMode) {
-        this.sortMode = sortMode;
-        mapIndex = new LinkedHashMap<String, Integer>();
-
-        for (int x = 0; x < this.wordList.size(); x++) {
-            String fruit = this.wordList.get(x);
-            String ch = fruit.substring(0, 1);
-            ch = ch.toUpperCase(Locale.US);
-
-            // HashMap will prevent duplicates
-            mapIndex.put(ch, x);
-        }
-
-        Set<String> sectionLetters = mapIndex.keySet();
-
-
-        // create a list from the set to sort
-        ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
-        Log.d("sectionList", sectionList.toString());
-        switch (sortMode){
-            case 0:
-                sections = "abcdefghilmnopqrstuvwxyz".toUpperCase(Locale.getDefault());
-                Collections.sort(sectionList);
-                Collections.sort(wordList);
-                break;
-            case 1:
-                sections = "zyxwvutsrqponmlihgfedcba".toUpperCase(Locale.getDefault());
-                Collections.sort(sectionList);
-                Collections.reverse(sectionList);
-                Collections.sort(wordList);
-                Collections.reverse(wordList);
-                break;
-            case 2:
-                break;
-        }
-        notifyDataSetChanged();
     }
 }

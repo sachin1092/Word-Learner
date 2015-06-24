@@ -1,6 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:ads="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -41,140 +41,118 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/appbar"
         android:layout_above="@+id/adView"
+        android:layout_below="@+id/appbar"
         android:layout_marginTop="20dp">
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/back"
             android:gravity="center"
-            android:orientation="vertical"
-            tools:context=".MyActivity">
+            android:orientation="vertical">
 
-
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            <Button
                 android:id="@+id/buttonAddWords"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_marginBottom="2.5dp"
                 android:layout_marginLeft="25dp"
                 android:layout_marginRight="25dp"
                 android:layout_marginTop="2.5dp"
-                android:clickable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                card_view:cardCornerRadius="2dp">
+                android:background="@drawable/item_background"
+                android:text="WORD LIST"
+                android:textColor="@color/colorTernaryText"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:paddingTop="15dp"
-                    android:paddingBottom="15dp"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorTernaryText"
-                    android:text="WORD LIST"
-                    android:tint="@color/accent" />
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            <Button
                 android:id="@+id/buttonTest"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_marginBottom="2.5dp"
                 android:layout_marginLeft="25dp"
                 android:layout_marginRight="25dp"
                 android:layout_marginTop="2.5dp"
-                android:clickable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                card_view:cardCornerRadius="2dp">
+                android:background="@drawable/item_background"
+                android:text="SESSIONS"
+                android:textColor="@color/colorTernaryText"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:paddingTop="15dp"
-                    android:paddingBottom="15dp"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:text="TEST"
-                    android:textColor="@color/colorTernaryText"
-                    android:tint="@color/accent" />
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            <Button
                 android:id="@+id/buttonImport"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_marginBottom="2.5dp"
                 android:layout_marginLeft="25dp"
                 android:layout_marginRight="25dp"
                 android:layout_marginTop="2.5dp"
-                android:clickable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                card_view:cardCornerRadius="2dp">
+                android:background="@drawable/item_background"
+                android:text="IMPORT WORDS"
+                android:textColor="@color/colorTernaryText"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:paddingTop="15dp"
-                    android:paddingBottom="15dp"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorTernaryText"
-                    android:text="IMPORT WORD LIST"
-                    android:tint="@color/accent" />
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            <Button
                 android:id="@+id/buttonExport"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_marginBottom="2.5dp"
                 android:layout_marginLeft="25dp"
                 android:layout_marginRight="25dp"
                 android:layout_marginTop="2.5dp"
-                android:clickable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                card_view:cardCornerRadius="2dp">
+                android:background="@drawable/item_background"
+                android:text="EXPORT WORDS"
+                android:textColor="@color/colorTernaryText"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:paddingTop="15dp"
-                    android:paddingBottom="15dp"
-                    android:textSize="12sp"
-                    android:textColor="@color/colorTernaryText"
-                    android:textStyle="bold"
-                    android:text="EXPORT WORD LIST"
-                    android:tint="@color/accent" />
-
-            </android.support.v7.widget.CardView>
-
+            <Button
+                android:id="@+id/buttonRemoveAds"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="2.5dp"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="25dp"
+                android:layout_marginTop="2.5dp"
+                android:background="@drawable/item_background"
+                android:text="REMOVE ADS BY DONATION"
+                android:textColor="@color/colorTernaryText"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
     </ScrollView>
+
+    <!--<android.support.design.widget.FloatingActionButton-->
+    <!--android:id="@+id/buttonImport"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentLeft="true"-->
+    <!--android:layout_alignParentStart="true"-->
+    <!--android:layout_margin="16dp"-->
+    <!--app:backgroundTint="@color/main_button_yellow_normal"-->
+    <!--android:layout_above="@+id/adView"-->
+    <!--android:src="@drawable/ic_package_up" />-->
+
+    <!--<android.support.design.widget.FloatingActionButton-->
+    <!--android:id="@+id/buttonExport"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_above="@+id/adView"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_alignParentEnd="true"-->
+    <!--app:backgroundTint="@color/main_button_blue_normal"-->
+    <!--android:layout_margin="16dp"-->
+    <!--android:src="@drawable/ic_package_down" />-->
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         ads:adSize="BANNER"
-        ads:adUnitId="ca-app-pub-0456749078397566/9841613280">
-    </com.google.android.gms.ads.AdView>
+        ads:adUnitId="ca-app-pub-0456749078397566/9841613280"></com.google.android.gms.ads.AdView>
 </RelativeLayout>

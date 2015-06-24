@@ -15,7 +15,6 @@
     </style>
 
 
-
     <style name="OverFlow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
         <item name="android:src">@drawable/ic_sort</item>
     </style>

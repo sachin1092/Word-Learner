@@ -71,12 +71,13 @@ public class Utils {
         list.clear();
         list.addAll(set);
 
-//        for(int i = 0 ; i < list.size() ; i++){
-//            String item = list.get(i).toLowerCase(Locale.US);
-//            list.remove(i);
-//            list.add(item);
-//
-//        }
+        for(int i = 0 ; i < list.size() ; i++){
+            String item = list.get(i).toLowerCase(Locale.US);
+            list.remove(i);
+            if(!item.isEmpty())
+                list.add(item);
+
+        }
 
         if (null == FileName)
             throw new RuntimeException("FileName is null!");
@@ -126,6 +127,14 @@ public class Utils {
         set.addAll(list);
         list.clear();
         list.addAll(set);
+
+        for(int i = 0 ; i < list.size() ; i++){
+            String item = list.get(i).toLowerCase(Locale.US);
+            list.remove(i);
+            if(!item.isEmpty())
+                list.add(item);
+
+        }
         return list;
     }
 
@@ -143,8 +152,8 @@ public class Utils {
         return string;
     }
 
-    public static final String URL1 = "http://api.wordnik.com/v4/word.json/";
-    public static final String URL2 = "/definitions?limit=200&includeRelated=true&useCanonical=false&includeTags=false&api_key="+Constants.API_KEY;
+//    public static final String URL1 = "http://api.wordnik.com/v4/word.json/";
+//    public static final String URL2 = "/definitions?limit=200&includeRelated=true&useCanonical=false&includeTags=false&api_key="+Constants.API_KEY;
 
     public static boolean hasWord(String word) {
         word = word.trim().toLowerCase(Locale.getDefault());

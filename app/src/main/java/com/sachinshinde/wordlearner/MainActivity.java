@@ -10,6 +10,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.sachinshinde.wordlearner.activities.AboutClass;
+import com.sachinshinde.wordlearner.utils.FilePath;
 
 import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 
@@ -36,6 +39,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -54,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
 
         final ActionBar ab = getSupportActionBar();
-        ab.setHomeAsUpIndicator(R.drawable.word_learner);
+//        ab.setHomeAsUpIndicator(R.drawable.word_learner);
         ab.setTitle("");
 //        ab.setDisplayHomeAsUpEnabled(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -67,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(MainActivity.this, AddWordsActivity.class));
+                overridePendingTransition(R.anim.slide_in_left,
+                        R.anim.slide_out_right);
             }
         });
 
@@ -81,16 +87,23 @@ public class MainActivity extends AppCompatActivity implements
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (i == 0) {
                             startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.WordsFile));
+                            overridePendingTransition(R.anim.slide_in_left,
+                                    R.anim.slide_out_right);
                         } else {
                             startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.SessionFile));
+                            overridePendingTransition(R.anim.slide_in_left,
+                                    R.anim.slide_out_right);
                         }
                     }
                 });
                 File mFile = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/" + Utils.SessionFile);
                 if (mFile.exists())
                     builder.show();
-                else
+                else {
                     startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.WordsFile));
+                    overridePendingTransition(R.anim.slide_in_left,
+                            R.anim.slide_out_right);
+                }
             }
         });
 
@@ -114,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 showFileChooser();
+                Toast.makeText(MainActivity.this, "Select a text file with words.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -153,7 +167,11 @@ public class MainActivity extends AppCompatActivity implements
                     String path = null;
                     try {
                         path = getPath(this, uri);
-                        Toast.makeText(getBaseContext(), path, Toast.LENGTH_LONG).show();
+                        if(path == null){
+//                            Toast.makeText(MainActivity.this, getRealPathFromURI(uri), Toast.LENGTH_SHORT).show();
+                            path = FilePath.getPath(getBaseContext(), uri);
+                        }
+                        Toast.makeText(getBaseContext(), "Imported " + path + " Successfully", Toast.LENGTH_LONG).show();
                         ArrayList<String> newWordList = parseFile(path);
                         ArrayList<String> oldList = Utils.loadListFromFile(Utils.WordsFile);
                         if (oldList != null)
@@ -201,7 +219,13 @@ public class MainActivity extends AppCompatActivity implements
             BufferedReader reader = new BufferedReader(new FileReader(path));
             String line;
             while ((line = reader.readLine()) != null) {
-                list.add(line);
+                if(line.contains(" ")){
+                    String[] lines = line.split(" ");
+                    for (String line1 : lines) if(!line1.isEmpty()) list.add(line1.toLowerCase(Locale.US));
+                }else {
+                    if(!line.isEmpty())
+                        list.add(line.toLowerCase(Locale.US));
+                }
             }
             reader.close();
         } catch (IOException e) {
@@ -209,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         return list;
     }
+
 
     public class ExportWords extends AsyncTask<String, Void, String> {
 
@@ -306,8 +331,8 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.action_share:
                 startActivity(createShareIntent());
                 return true;
-            case R.id.action_gopro:
-                return true;
+//            case R.id.action_gopro:
+//                return true;
         }
         return super.onOptionsItemSelected(item);
     }

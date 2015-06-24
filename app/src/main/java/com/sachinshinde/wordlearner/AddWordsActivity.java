@@ -190,7 +190,7 @@ public class AddWordsActivity extends AppCompatActivity {
         Collections.sort(words);
 
 
-        mAdapter = new ListAdapter(getBaseContext(), words, 0);
+        mAdapter = new ListAdapter(getBaseContext(), words);
         lvWords.setAdapter(mAdapter);
 
         ((TextView) findViewById(R.id.tvCount)).setText("Total Count: " + words.size() + " words");
@@ -418,29 +418,37 @@ public class AddWordsActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
-            case R.id.action_AtoZ:
-                item.setChecked(true);
-                mAdapter.setSortMode(0);
-                return true;
-            case R.id.action_ZtoA:
-                item.setChecked(true);
-                mAdapter.setSortMode(1);
-                return true;
-            case R.id.action_MostRevisedFirst:
-                item.setChecked(true);
-                mAdapter.setSortMode(3);
-                return true;
+//            case R.id.action_AtoZ:
+//                item.setChecked(true);
+//                mAdapter.setSortMode(0);
+//                return true;
+//            case R.id.action_ZtoA:
+//                item.setChecked(true);
+//                mAdapter.setSortMode(1);
+//                return true;
+//            case R.id.action_MostRevisedFirst:
+//                item.setChecked(true);
+//                mAdapter.setSortMode(3);
+//                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
 
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.add_words, menu);
         return true;
+    }*/
+
+    @Override
+    public void onBackPressed() {
+        finish();
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        super.onBackPressed();
     }
 }
