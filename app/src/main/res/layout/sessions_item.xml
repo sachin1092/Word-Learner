@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.daimajia.swipe.SwipeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:swipe="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipe"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    swipe:leftEdgeSwipeOffset="0dp"
+    swipe:rightEdgeSwipeOffset="0dp">
+
+    <LinearLayout
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:gravity="center"
+        android:tag="Bottom3">
+
+        <ImageView
+            android:id="@+id/trash"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:padding="15dp"
+            android:background="@drawable/item_background_transparent"
+            android:clickable="true"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:src="@drawable/ic_delete"
+            android:tint="@color/main_button_red_normal" />
+
+    </LinearLayout>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/containerSessionItem"
+        android:layout_width="match_parent"
+        android:background="@color/window_background"
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_toLeftOf="@+id/ibResumeSession"
+            android:background="@drawable/item_background_transparent"
+            android:clickable="true"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingLeft="10dp">
+
+            <TextView
+                android:id="@+id/tvSessionName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="ABC Session"
+                android:textColor="@color/colorPrimaryText"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvSessionLastUsed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="Last Used: Thursday June 25, 1:49 PM"
+                android:textColor="@color/colorSecondaryText"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="0.2dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/ibResumeSession"
+            android:background="@color/colorDivider" />
+
+        <ImageButton
+            android:id="@+id/ibResumeSession"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/view2"
+            android:background="@drawable/item_background_transparent"
+            android:src="@drawable/ic_play"
+            android:tint="@color/main_button_green_normal" />
+
+        <View
+            android:id="@+id/view2"
+            android:layout_width="0.2dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:background="@color/colorDivider" />
+
+    </RelativeLayout>
+</com.daimajia.swipe.SwipeLayout>
