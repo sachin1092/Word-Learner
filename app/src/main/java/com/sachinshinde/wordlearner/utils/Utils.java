@@ -39,11 +39,15 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,20 +73,20 @@ public class Utils {
         list.clear();
         list.addAll(set);
 
-        for(int i = 0 ; i < list.size() ; i++){
-            String item = list.get(i).toLowerCase(Locale.US);
-            list.remove(i);
-            if(!item.isEmpty())
-                list.add(item);
-
-        }
+//        for(int i = 0 ; i < list.size() ; i++){
+//            String item = list.get(i).toLowerCase(Locale.US);
+//            list.remove(i);
+//            if(!item.isEmpty())
+//                list.add(item);
+//
+//        }
 
 
         if (null == FileName)
             throw new RuntimeException("FileName is null!");
 
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
-        if(!mDir.exists()){
+        if (!mDir.exists()) {
             mDir.mkdirs();
         }
 
@@ -104,7 +108,7 @@ public class Utils {
         if (null == FileName)
             return null;
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
-        if(!mDir.exists()){
+        if (!mDir.exists()) {
             mDir.mkdirs();
         }
         ArrayList<String> list = new ArrayList<String>();
@@ -127,13 +131,13 @@ public class Utils {
         list.clear();
         list.addAll(set);
 
-        for(int i = 0 ; i < list.size() ; i++){
-            String item = list.get(i).toLowerCase(Locale.US);
-            list.remove(i);
-            if(!item.isEmpty())
-                list.add(item);
-
-        }
+//        for(int i = 0 ; i < list.size() ; i++){
+//            String item = list.get(i).toLowerCase(Locale.US);
+//            list.remove(i);
+//            if(!item.isEmpty())
+//                list.add(item);
+//
+//        }
         return list;
     }
 
@@ -157,7 +161,7 @@ public class Utils {
     public static boolean hasWord(String word) {
         word = word.trim().toLowerCase(Locale.getDefault());
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
-        if(!mDir.exists()){
+        if (!mDir.exists()) {
             mDir.mkdirs();
         }
         File mFile = new File(mDir.getPath() + "/" + word.trim().toLowerCase(Locale.getDefault()));
@@ -167,7 +171,7 @@ public class Utils {
     public static boolean deleteWord(String word) {
         word = word.trim().toLowerCase(Locale.getDefault());
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
-        if(!mDir.exists()){
+        if (!mDir.exists()) {
             mDir.mkdirs();
         }
         File mFile = new File(mDir.getPath() + "/" + word.trim().toLowerCase(Locale.getDefault()));
@@ -177,7 +181,7 @@ public class Utils {
     public static String getDefinition(String word) {
         word = word.trim().toLowerCase(Locale.getDefault());
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
-        if(!mDir.exists()){
+        if (!mDir.exists()) {
             mDir.mkdirs();
         }
         File mFile = new File(mDir.getPath() + "/" + word);
@@ -200,7 +204,7 @@ public class Utils {
     public static String getWordJSON(String word) {
         word = word.trim().toLowerCase(Locale.getDefault());
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
-        if(!mDir.exists()){
+        if (!mDir.exists()) {
             mDir.mkdirs();
         }
         File mFile = new File(mDir.getPath() + "/" + word);
@@ -223,7 +227,7 @@ public class Utils {
     public static String saveWord(String word, String definition) {
         word = word.trim().toLowerCase(Locale.getDefault());
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Words");
-        if(!mDir.exists()){
+        if (!mDir.exists()) {
             mDir.mkdirs();
         }
         File mFile = new File(mDir.getPath() + "/" + word);
@@ -240,7 +244,7 @@ public class Utils {
         return definition;
     }
 
-    public static View getMeaningsView(String definition, Activity mContext){
+    public static View getMeaningsView(String definition, Activity mContext) {
 
         try {
             Word word = ProcessWord.getDefinition(definition);
@@ -250,7 +254,7 @@ public class Utils {
 
             ArrayList<SubWords> subWords = word.getWords();
 
-            for (int x = 0 ; x < subWords.size() ; x++) {
+            for (int x = 0; x < subWords.size(); x++) {
 
                 SubWords subWord = subWords.get(x);
 
@@ -276,12 +280,12 @@ public class Utils {
                         ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText("");
 
                     if (meaning.getSynonyms() != null)
-                        setText(mContext, (TextView) meaningItemView.findViewById(R.id.tvSynonyms),Html.fromHtml(meaning.getSynonyms().toString().replace("[", "").replace("]", "")), true);
+                        setText(mContext, (TextView) meaningItemView.findViewById(R.id.tvSynonyms), Html.fromHtml(meaning.getSynonyms().toString().replace("[", "").replace("]", "")), true);
                     else
                         meaningItemView.findViewById(R.id.synonymsContainer).setVisibility(View.GONE);
 
                     if (meaning.getAntonyms() != null)
-                        setText(mContext, (TextView) meaningItemView.findViewById(R.id.tvAntonyms),Html.fromHtml(meaning.getAntonyms().toString().replace("[", "").replace("]", "")), true);
+                        setText(mContext, (TextView) meaningItemView.findViewById(R.id.tvAntonyms), Html.fromHtml(meaning.getAntonyms().toString().replace("[", "").replace("]", "")), true);
                     else
                         meaningItemView.findViewById(R.id.antonymsContainer).setVisibility(View.GONE);
 
@@ -309,7 +313,7 @@ public class Utils {
     }
 
 
-    public static View getProgressView(Activity activity, String msg){
+    public static View getProgressView(Activity activity, String msg) {
         final View view = LayoutInflater.from(activity).inflate(
                 R.layout.progress_dialog, null);
         View img1 = view.findViewById(R.id.pd_circle1);
@@ -335,18 +339,18 @@ public class Utils {
 
     }
 
-    public static Animator setRepeatableAnim(Activity activity, View target, final int duration, int animRes){
+    public static Animator setRepeatableAnim(Activity activity, View target, final int duration, int animRes) {
         final Animator anim = AnimatorInflater.loadAnimator(activity, animRes);
         anim.setDuration(duration);
         anim.setTarget(target);
         return anim;
     }
 
-    public static void setListeners(final View target, Animator anim, final Animator animator, final int duration){
+    public static void setListeners(final View target, Animator anim, final Animator animator, final int duration) {
         anim.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animat) {
-                if(target.getVisibility() == View.INVISIBLE){
+                if (target.getVisibility() == View.INVISIBLE) {
                     target.setVisibility(View.VISIBLE);
                 }
                 new Handler().postDelayed(new Runnable() {
@@ -372,146 +376,6 @@ public class Utils {
 
             }
         });
-    }
-
-    public static class ClickableURLSpan extends URLSpan {
-
-        private TextToSpeech ttobj;
-
-        public ClickableURLSpan(String url) {
-            super(url);
-        }
-
-        Activity mActivity;
-
-        public ClickableURLSpan(Activity mActivity, String url) {
-            super(url);
-            this.mActivity = mActivity;
-            ttobj = new TextToSpeech(mActivity, new TextToSpeech.OnInitListener() {
-                @Override
-                public void onInit(int status) {
-                }
-            });
-            ttobj.setLanguage(Locale.US);
-
-            ttobj.setSpeechRate(0.8f);
-        }
-
-        android.support.v7.app.AlertDialog dialog;
-
-
-
-        @Override
-        public void onClick(View widget) {
-            final String clickedText = getURL().trim().toLowerCase(Locale.getDefault());
-            final AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-
-            builder.setView(Utils.getProgressView(mActivity, "Loading..."));
-
-            final boolean hasWord = Utils.hasWord(clickedText);
-
-            new AsyncTask<String, Void, String>() {
-
-                @Override
-                protected String doInBackground(String... strings) {
-                    if (Utils.hasWord(strings[0])) {
-                        Log.d("WordLearner", "Loading from memory");
-                        return Utils.getWordJSON(strings[0]);
-                    }
-                    Log.d("WordLearner", "Loading from my dictionary");
-                    return Utils.saveWord(strings[0], NetworkUtils.GET(Utils.FINAL_URL_SINGLE + strings[0].trim().toLowerCase(Locale.US)));
-                }
-
-                @Override
-                protected void onPostExecute(String s) {
-
-                    builder.setView(null);
-
-
-
-                    View mView = Utils.getMeaningsView(s, mActivity);
-                    if (mView != null) {
-
-
-
-                        View buttonBar = LayoutInflater.from(mActivity).inflate(R.layout.button_bar, null);
-                        FrameLayout fl = (FrameLayout) buttonBar.findViewById(R.id.flButtonBarContainer);
-                        fl.addView(mView);
-
-                        builder.setView(buttonBar);
-
-                        if(hasWord){
-                            builder.setCancelable(true);
-                            ((ImageButton) buttonBar.findViewById(R.id.bCancelorDelete)).setImageResource(R.drawable.ic_delete);
-                        } else {
-                            builder.setCancelable(false);
-                            ((ImageButton) buttonBar.findViewById(R.id.bDone)).setImageResource(R.drawable.ic_plus);
-                        }
-
-                        final AlertDialog mDialog = builder.create();
-
-                        buttonBar.findViewById(R.id.bEdit).setVisibility(View.GONE);
-
-                        buttonBar.findViewById(R.id.bSpeak).setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-                                    ttobj.speak(clickedText, TextToSpeech.QUEUE_FLUSH, null, String.valueOf(System.currentTimeMillis()));
-                                } else {
-                                    ttobj.speak(clickedText, TextToSpeech.QUEUE_FLUSH, null);
-                                }
-                            }
-                        });
-
-
-
-                        buttonBar.findViewById(R.id.bCancelorDelete).setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if(hasWord) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(INTENT_DELETE_WORD);
-                                    intent.putExtra("WORD", clickedText);
-                                    mActivity.sendBroadcast(intent);
-                                }
-                                Utils.deleteWord(clickedText);
-                                mDialog.cancel();
-                            }
-                        });
-
-
-
-                        buttonBar.findViewById(R.id.bDone).setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if(!hasWord) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(INTENT_ADD_WORD);
-                                    intent.putExtra("WORD", clickedText);
-                                    mActivity.sendBroadcast(intent);
-                                }
-                                mDialog.cancel();
-                            }
-                        });
-
-                        mDialog.show();
-
-                    }
-                    else {
-                        Toast.makeText(mActivity, "Oops! An error occurred. Try Again.", Toast.LENGTH_LONG).show();
-                        dialog.cancel();
-                        Utils.deleteWord(clickedText);
-                        return;
-                    }
-
-                    dialog.cancel();
-                    super.onPostExecute(s);
-                }
-            }.execute(clickedText);
-            dialog = builder.create();
-            dialog.show();
-        }
     }
 
     public static void setText(Activity mActivity, TextView tv, Spanned input, boolean linkify) {
@@ -551,7 +415,7 @@ public class Utils {
         }
     }
 
-    public static AlertDialog getProgressDialog(Activity activity, String msg){
+    public static AlertDialog getProgressDialog(Activity activity, String msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         final View view = LayoutInflater.from(activity).inflate(
                 R.layout.progress_dialog, null);
@@ -574,12 +438,191 @@ public class Utils {
         ad.setCanceledOnTouchOutside(false);
         try {
             ad.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         ad.show();
-//        ad.getWindow().setLayout(dpToPx(200, activity), dpToPx(125, activity));
         return ad;
+    }
+
+    public static String getTime(long date, String form) {
+        final SimpleDateFormat format = new SimpleDateFormat(form, Locale.US);
+        format.setTimeZone(TimeZone.getDefault());
+        Date now = new Date(date);
+
+        return format.format(now);
+
+    }
+
+    public static void deleteFile(File file)
+            throws IOException {
+
+        if (file.isDirectory()) {
+
+            //directory is empty, then delete it
+            if (file.list().length == 0) {
+
+                file.delete();
+                System.out.println("Directory is deleted : "
+                        + file.getAbsolutePath());
+
+            } else {
+
+                //list all the directory contents
+                String files[] = file.list();
+
+                for (String temp : files) {
+                    //construct the file structure
+                    File fileDelete = new File(file, temp);
+
+                    //recursive delete
+                    deleteFile(fileDelete);
+                }
+
+                //check the directory again, if empty then delete it
+                if (file.list().length == 0) {
+                    file.delete();
+                    System.out.println("Directory is deleted : "
+                            + file.getAbsolutePath());
+                }
+            }
+
+        } else {
+            //if file, then delete it
+            file.delete();
+            System.out.println("File is deleted : " + file.getAbsolutePath());
+        }
+    }
+
+    public static class ClickableURLSpan extends URLSpan {
+
+        Activity mActivity;
+        android.support.v7.app.AlertDialog dialog;
+        private TextToSpeech ttobj;
+
+        public ClickableURLSpan(String url) {
+            super(url);
+        }
+
+        public ClickableURLSpan(Activity mActivity, String url) {
+            super(url);
+            this.mActivity = mActivity;
+            ttobj = new TextToSpeech(mActivity, new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                }
+            });
+            ttobj.setLanguage(Locale.US);
+
+            ttobj.setSpeechRate(0.8f);
+        }
+
+        @Override
+        public void onClick(View widget) {
+            final String clickedText = getURL().trim().toLowerCase(Locale.getDefault());
+            final AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+
+            builder.setView(Utils.getProgressView(mActivity, "Loading..."));
+
+            final boolean hasWord = Utils.hasWord(clickedText);
+
+            new AsyncTask<String, Void, String>() {
+
+                @Override
+                protected String doInBackground(String... strings) {
+                    if (Utils.hasWord(strings[0])) {
+                        Log.d("WordLearner", "Loading from memory");
+                        return Utils.getWordJSON(strings[0]);
+                    }
+                    Log.d("WordLearner", "Loading from my dictionary");
+                    return Utils.saveWord(strings[0], NetworkUtils.GET(Utils.FINAL_URL_SINGLE + strings[0].trim().toLowerCase(Locale.US)));
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+
+                    builder.setView(null);
+
+
+                    View mView = Utils.getMeaningsView(s, mActivity);
+                    if (mView != null) {
+
+
+                        View buttonBar = LayoutInflater.from(mActivity).inflate(R.layout.button_bar, null);
+                        FrameLayout fl = (FrameLayout) buttonBar.findViewById(R.id.flButtonBarContainer);
+                        fl.addView(mView);
+
+                        builder.setView(buttonBar);
+
+                        if (hasWord) {
+                            builder.setCancelable(true);
+                            ((ImageButton) buttonBar.findViewById(R.id.bCancelorDelete)).setImageResource(R.drawable.ic_delete);
+                        } else {
+                            builder.setCancelable(false);
+                            ((ImageButton) buttonBar.findViewById(R.id.bDone)).setImageResource(R.drawable.ic_plus);
+                        }
+
+                        final AlertDialog mDialog = builder.create();
+
+                        buttonBar.findViewById(R.id.bEdit).setVisibility(View.GONE);
+
+                        buttonBar.findViewById(R.id.bSpeak).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+                                    ttobj.speak(clickedText, TextToSpeech.QUEUE_FLUSH, null, String.valueOf(System.currentTimeMillis()));
+                                } else {
+                                    ttobj.speak(clickedText, TextToSpeech.QUEUE_FLUSH, null);
+                                }
+                            }
+                        });
+
+
+                        buttonBar.findViewById(R.id.bCancelorDelete).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (hasWord) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(INTENT_DELETE_WORD);
+                                    intent.putExtra("WORD", clickedText);
+                                    mActivity.sendBroadcast(intent);
+                                }
+                                Utils.deleteWord(clickedText);
+                                mDialog.cancel();
+                            }
+                        });
+
+
+                        buttonBar.findViewById(R.id.bDone).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (!hasWord) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(INTENT_ADD_WORD);
+                                    intent.putExtra("WORD", clickedText);
+                                    mActivity.sendBroadcast(intent);
+                                }
+                                mDialog.cancel();
+                            }
+                        });
+
+                        mDialog.show();
+
+                    } else {
+                        Toast.makeText(mActivity, "Oops! An error occurred. Try Again.", Toast.LENGTH_LONG).show();
+                        dialog.cancel();
+                        Utils.deleteWord(clickedText);
+                        return;
+                    }
+
+                    dialog.cancel();
+                    super.onPostExecute(s);
+                }
+            }.execute(clickedText);
+            dialog = builder.create();
+            dialog.show();
+        }
     }
 
 }

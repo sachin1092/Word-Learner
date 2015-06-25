@@ -7,10 +7,10 @@ import com.sachinshinde.wordlearner.module.Session;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -58,18 +58,23 @@ public class SessionsUtil {
 
     public static ArrayList<Session> getSessionList() {
         File mDir = new File(SESSIONS_PATH);
-        if (!mDir.exists()) {
-            mDir.mkdirs();
+        try {
+            if (!mDir.exists()) {
+                mDir.mkdirs();
+                return new ArrayList<>();
+            }
+            ArrayList<Session> sessionsList = new ArrayList<>();
+
+            File[] dirList = mDir.listFiles();
+            for (int i = 0; i < dirList.length; i++) {
+                sessionsList.add(getSession(dirList[i].getName()));
+            }
+            return sessionsList;
+        } catch (Exception ex) {
             return new ArrayList<>();
         }
-        ArrayList<Session> sessionsList = new ArrayList<>();
 
-        File[] dirList = mDir.listFiles();
-        for (int i = 0; i < dirList.length; i++) {
-            sessionsList.add(getSession(dirList[i].getName()));
-        }
 
-        return sessionsList;
     }
 
     private static void saveList(ArrayList<String> list, String path, String fileName) {
@@ -77,15 +82,6 @@ public class SessionsUtil {
         set.addAll(list);
         list.clear();
         list.addAll(set);
-
-        for (int i = 0; i < list.size(); i++) {
-            String item = list.get(i).toLowerCase(Locale.US);
-            list.remove(i);
-            if (!item.isEmpty())
-                list.add(item);
-
-        }
-
 
         if (null == fileName)
             throw new RuntimeException("FileName is null!");
@@ -134,15 +130,23 @@ public class SessionsUtil {
         set.addAll(list);
         list.clear();
         list.addAll(set);
-
-        for (int i = 0; i < list.size(); i++) {
-            String item = list.get(i).toLowerCase(Locale.US);
-            list.remove(i);
-            if (!item.isEmpty())
-                list.add(item);
-
-        }
         return list;
+    }
+
+    public static void deleteSession(Session session) {
+        deleteSession(session.getSessionName());
+    }
+
+    public static void deleteSession(String sessionName) {
+        File directory = new File(SESSIONS_PATH + "/" + sessionName);
+        if (directory.exists()) {
+            try {
+                Utils.deleteFile(directory);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

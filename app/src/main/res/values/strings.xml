@@ -30,5 +30,9 @@
         <item>ljds session</item>
         <item>fdjk session</item>
     </array>
+    <string name="title_activity_session_details">SessionDetailsActivity</string>
+    <string name="undo">Undo Last Action</string>
+    <string name="edit_word">Edit Word</string>
+    <string name="speak">Speak</string>
 
 </resources>

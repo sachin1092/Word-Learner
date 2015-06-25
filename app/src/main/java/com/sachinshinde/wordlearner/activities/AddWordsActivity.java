@@ -34,9 +34,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.sachinshinde.wordlearner.utils.Constants;
-import com.sachinshinde.wordlearner.adapters.ListAdapter;
 import com.sachinshinde.wordlearner.R;
+import com.sachinshinde.wordlearner.adapters.ListAdapter;
+import com.sachinshinde.wordlearner.utils.Constants;
 import com.sachinshinde.wordlearner.utils.NetworkUtils;
 import com.sachinshinde.wordlearner.utils.Utils;
 
@@ -58,17 +58,18 @@ public class AddWordsActivity extends AppCompatActivity {
     AlertDialog dialog;
     boolean done = false;
     ArrayList<String> sessionList = new ArrayList<String>();
+    android.support.v7.app.AlertDialog mDialog;
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction() != null) {
+            if (intent.getAction() != null) {
                 if (intent.getAction().equalsIgnoreCase(Utils.INTENT_ADD_WORD)) {
                     Toast.makeText(getBaseContext(), "Added " + intent.getStringExtra("WORD"), Toast.LENGTH_LONG).show();
                     addWord(intent.getStringExtra("WORD"), false);
                 } else if (intent.getAction().equalsIgnoreCase(Utils.INTENT_DELETE_WORD)) {
 
                     deleteWord(intent.getStringExtra("WORD"));
-                } else if (intent.getAction().equalsIgnoreCase(Utils.INTENT_REFRESH)){
+                } else if (intent.getAction().equalsIgnoreCase(Utils.INTENT_REFRESH)) {
                     words.clear();
                     words = Utils.loadListFromFile(Utils.WordsFile);
                     if (words == null) {
@@ -85,7 +86,7 @@ public class AddWordsActivity extends AppCompatActivity {
         }
     };
 
-    public void addWord(String wordStr, boolean openDialog){
+    public void addWord(String wordStr, boolean openDialog) {
         wordStr = wordStr.toLowerCase(Locale.US).trim();
         words.add(wordStr);
         Collections.sort(words);
@@ -93,7 +94,7 @@ public class AddWordsActivity extends AppCompatActivity {
         ((ListAdapter) lvWords.getAdapter()).notifyDataSetChanged();
         Utils.writeListToFile(mAdapter.getList(), Utils.WordsFile);
         addToSessionList(wordStr);
-        if(openDialog)
+        if (openDialog)
             try {
                 performItemClick(mAdapter.getPosition(wordStr));
             } catch (Exception ex) {
@@ -112,7 +113,7 @@ public class AddWordsActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tvCount)).setText("Total Count: " + mAdapter.getList().size() + " words");
     }
 
-    public void performLongItemClick(final int pos){
+    public void performLongItemClick(final int pos) {
         final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(AddWordsActivity.this);
 
         builder.setTitle("Edit Word");
@@ -165,12 +166,14 @@ public class AddWordsActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        final ActionBar ab = getSupportActionBar();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        try {
+            final ActionBar ab = getSupportActionBar();
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        ab.setHomeAsUpIndicator(R.drawable.word_learner);
-        ab.setTitle("Words List");
+            ab.setTitle("Words List");
 //        ab.setDisplayHomeAsUpEnabled(true);
+        } catch (Exception ex) {
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -256,7 +259,7 @@ public class AddWordsActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int pos, long l) {
                 try {
                     performLongItemClick(pos);
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
                 return true;
@@ -277,7 +280,7 @@ public class AddWordsActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 mAdapter.filter(et.getText().toString().toLowerCase(Locale.getDefault()));
-                if(et.getText().length() > 0){
+                if (et.getText().length() > 0) {
                     findViewById(R.id.ivAddWords).setVisibility(View.VISIBLE);
                 } else {
                     findViewById(R.id.ivAddWords).setVisibility(View.GONE);
@@ -298,8 +301,6 @@ public class AddWordsActivity extends AppCompatActivity {
         mAdView.loadAd(adRequest);
 
     }
-
-    android.support.v7.app.AlertDialog mDialog;
 
     public void performItemClick(final int position) {
 
@@ -368,7 +369,6 @@ public class AddWordsActivity extends AppCompatActivity {
                     });
 
 
-
                     buttonBar.findViewById(R.id.bDone).setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -378,8 +378,7 @@ public class AddWordsActivity extends AppCompatActivity {
 
                     mNewDialog.show();
 
-                }
-                else {
+                } else {
                     Toast.makeText(AddWordsActivity.this, "Oops! An error occurred. Try Again.", Toast.LENGTH_LONG).show();
                     dialog.cancel();
                     Utils.deleteWord(mAdapter.getItem(position));

@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements
     View importDialogView;
     private DirectoryChooserFragment mDialog;
     private android.support.v7.app.AlertDialog mImportDialog;
-    private android.support.v7.app.AlertDialog mExportDialog;
     BroadcastReceiver mProgressReceivers = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     };
+    private android.support.v7.app.AlertDialog mExportDialog;
 
     public static String getPath(Context context, Uri uri) throws URISyntaxException {
         if ("content".equalsIgnoreCase(uri.getScheme())) {
@@ -108,11 +108,13 @@ public class MainActivity extends AppCompatActivity implements
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        final ActionBar ab = getSupportActionBar();
+        try {
+            final ActionBar ab = getSupportActionBar();
 //        ab.setHomeAsUpIndicator(R.drawable.word_learner);
-        ab.setTitle("");
+            ab.setTitle("");
 //        ab.setDisplayHomeAsUpEnabled(true);
+        } catch (Exception ex) {
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -132,9 +134,14 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View view) {
 
-                startActivity(new Intent(MainActivity.this, SessionsListActivity.class));
+                startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.SessionFile));
                             overridePendingTransition(R.anim.slide_in_left,
                                     R.anim.slide_out_right);
+
+
+//                startActivity(new Intent(MainActivity.this, SessionsListActivity.class));
+//                overridePendingTransition(R.anim.slide_in_left,
+//                        R.anim.slide_out_right);
 //                builder.setTitle("Select Session");
 //                builder.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, new String[]{"New session", "Resume old session"}), new DialogInterface.OnClickListener() {
 //                    @Override
@@ -393,14 +400,14 @@ public class MainActivity extends AppCompatActivity implements
 
     public class ExportWords extends AsyncTask<String, Void, String> {
 
+        AlertDialog.Builder mBuilder;
+        AlertDialog mDialog;
         private String path;
         private boolean index;
         private boolean showMeaning;
         private boolean exampleSentence;
         private boolean showSynonyms;
         private boolean showAntonyms;
-        AlertDialog.Builder mBuilder;
-        AlertDialog mDialog;
 
 
         public ExportWords(String path, boolean index, boolean showMeaning, boolean exampleSentence, boolean synonyms, boolean antonyms) {

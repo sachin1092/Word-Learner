@@ -9,10 +9,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -111,6 +115,15 @@ public class TestWordsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_words);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_close);
+        toolbar.setTitle("");
+        setSupportActionBar(toolbar);
+        try {
+            final ActionBar ab = getSupportActionBar();
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close);
+            ab.setTitle("");
+        } catch (Exception ex){}
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -348,7 +361,12 @@ public class TestWordsActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.test_words, menu);
+        return true;
+    }
 
 
     @Override
@@ -356,6 +374,17 @@ public class TestWordsActivity extends AppCompatActivity {
         finish();
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         super.onBackPressed();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

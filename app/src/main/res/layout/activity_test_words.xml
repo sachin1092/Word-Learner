@@ -1,14 +1,35 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ads="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/window_background"
     tools:context="com.sachinshinde.wordlearner.activities.TestWordsActivity">
 
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+        <!--</android.support.design.widget.CollapsingToolbarLayout>-->
+
+    </android.support.design.widget.AppBarLayout>
+
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
+        android:layout_below="@+id/appbar"
         android:layout_above="@+id/adView"
         android:layout_height="match_parent"
         android:paddingBottom="@dimen/activity_vertical_margin"
@@ -16,55 +37,68 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
 
-        <ImageButton
-            android:id="@+id/bSpeak"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:background="@drawable/main_button_blue"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_volume_high" />
+        <!--<ImageButton-->
+            <!--android:id="@+id/bSpeak"-->
+            <!--android:layout_width="40dp"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_alignParentTop="true"-->
+            <!--android:background="@drawable/main_button_blue"-->
+            <!--android:padding="8dp"-->
+            <!--android:scaleType="fitCenter"-->
+            <!--android:src="@drawable/ic_volume_high" />-->
 
-        <ProgressBar
-            android:id="@+id/pbVoice"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:indeterminateOnly="true"
-            android:visibility="gone" />
+        <!--<ProgressBar-->
+            <!--android:id="@+id/pbVoice"-->
+            <!--android:layout_width="40dp"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_alignParentTop="true"-->
+            <!--android:indeterminateOnly="true"-->
+            <!--android:visibility="gone" />-->
 
-        <ImageButton
-            android:id="@+id/bEdit"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginRight="8dp"
-            android:layout_toLeftOf="@+id/bSpeak"
-            android:background="@drawable/main_button_yellow"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_pencil" />
+        <!--<ImageButton-->
+            <!--android:id="@+id/bEdit"-->
+            <!--android:layout_width="40dp"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_marginRight="8dp"-->
+            <!--android:layout_toLeftOf="@+id/bSpeak"-->
+            <!--android:background="@drawable/main_button_yellow"-->
+            <!--android:padding="8dp"-->
+            <!--android:scaleType="fitCenter"-->
+            <!--android:src="@drawable/ic_pencil" />-->
 
-        <ImageButton
-            android:id="@+id/bLinkify"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginRight="8dp"
-            android:layout_toLeftOf="@+id/bEdit"
-            android:background="@drawable/main_button_green"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/linkify"
-            android:visibility="gone" />
+
+        <!--<ImageButton-->
+            <!--android:id="@+id/bCross"-->
+            <!--android:layout_width="40dp"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_alignParentTop="true"-->
+            <!--android:layout_alignParentLeft="true"-->
+            <!--android:background="@drawable/main_button_red"-->
+            <!--android:padding="8dp"-->
+            <!--android:scaleType="fitCenter"-->
+            <!--android:src="@drawable/ic_close" />-->
+
+
+        <!--<ImageButton-->
+            <!--android:id="@+id/bLinkify"-->
+            <!--android:layout_width="40dp"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_marginRight="8dp"-->
+            <!--android:layout_toLeftOf="@+id/bEdit"-->
+            <!--android:background="@drawable/main_button_green"-->
+            <!--android:padding="8dp"-->
+            <!--android:scaleType="fitCenter"-->
+            <!--android:src="@drawable/linkify"-->
+            <!--android:visibility="gone" />-->
 
         <TextView
             android:id="@+id/tvCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/bSpeak"
             android:paddingLeft="5dp"
+            android:paddingTop="5dp"
             android:text="Total Count: 1000 words"
             android:textColor="@color/colorPrimary"
             android:textSize="15sp" />
@@ -92,37 +126,11 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/bMeaning"
+            android:layout_above="@+id/containerScollbar"
             android:layout_below="@+id/tvWord"
             android:id="@+id/flWordsContainer"
             android:layout_centerHorizontal="true">
-
-            <!--<FrameLayout-->
-                <!--android:id="@+id/flWordsContainer"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content">-->
-
-            <!--</FrameLayout>-->
         </ScrollView>
-
-        <!--<ScrollView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_above="@+id/bMeaning"-->
-        <!--android:layout_below="@+id/tvWord"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:fadeScrollbars="false">-->
-
-        <!--<TextView-->
-        <!--android:id="@+id/tvMeaning"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:paddingTop="5dp"-->
-        <!--android:text="@string/hello_world"-->
-        <!--android:textColor="#fff"-->
-        <!--android:textSize="18sp" />-->
-
-        <!--</ScrollView>-->
 
 
         <FrameLayout
@@ -134,33 +142,48 @@
 
         </FrameLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:id="@+id/containerScollbar"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:orientation="horizontal">
+
         <Button
             android:id="@+id/bMeaning"
-            android:layout_width="200dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/bYes"
             android:layout_centerHorizontal="true"
-            android:text="Show Meaning" />
+            android:layout_weight="1"
+            android:text="SHOW" />
 
 
         <Button
             android:id="@+id/bYes"
-            android:layout_width="200dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:layout_above="@+id/bNo"
             android:layout_centerHorizontal="true"
-            android:text="I know" />
+            android:text="I KNOW" />
 
         <Button
             android:id="@+id/bNo"
-            android:layout_width="200dp"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="0dp"
-            android:text="Will revise" />
+            android:text="REVISE" />
+
+        </LinearLayout>
 
     </RelativeLayout>
+
+
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"

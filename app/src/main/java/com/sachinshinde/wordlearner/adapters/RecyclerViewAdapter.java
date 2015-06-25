@@ -16,7 +16,10 @@ import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.adapters.RecyclerSwipeAdapter;
 import com.sachinshinde.wordlearner.R;
+import com.sachinshinde.wordlearner.module.Session;
+import com.sachinshinde.wordlearner.utils.Utils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapter.SimpleViewHolder> {
@@ -47,11 +50,11 @@ public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapte
     }
 
     private Context mContext;
-    private ArrayList<String> mDataset;
+    private ArrayList<Session> mDataset;
 
     //protected SwipeItemRecyclerMangerImpl mItemManger = new SwipeItemRecyclerMangerImpl(this);
 
-    public RecyclerViewAdapter(Context context, ArrayList<String> objects) {
+    public RecyclerViewAdapter(Context context, ArrayList<Session> objects) {
         this.mContext = context;
         this.mDataset = objects;
     }
@@ -65,9 +68,9 @@ public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(final SimpleViewHolder viewHolder, final int position) {
 
-        String item = mDataset.get(position);
+        Session item = mDataset.get(position);
 
-        if(item.equalsIgnoreCase("---sep---")){
+        if(item.getSessionName().equalsIgnoreCase("---sep---")){
             viewHolder.swipeLayout.setVisibility(View.GONE);
         } else {
             viewHolder.swipeLayout.setVisibility(View.VISIBLE);
@@ -91,8 +94,8 @@ public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapte
                 Toast.makeText(view.getContext(), "Deleted " + viewHolder.name.getText().toString() + "!", Toast.LENGTH_SHORT).show();
             }
         });
-        viewHolder.lastUsed.setText((position + 1) + ".");
-        viewHolder.name.setText(item);
+        viewHolder.lastUsed.setText(Utils.getTime(item.getLastUsed(), "EEEE, MMM dd, hh:mm a"));
+        viewHolder.name.setText(item.getSessionName());
         mItemManger.bindView(viewHolder.itemView, position);
     }
 
