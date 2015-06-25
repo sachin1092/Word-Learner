@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements
                 startActivity(new Intent(MainActivity.this, AddWordsActivity.class));
                 overridePendingTransition(R.anim.slide_in_left,
                         R.anim.slide_out_right);
+                finish();
             }
         });
 
@@ -134,14 +135,15 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View view) {
 
-                startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.SessionFile));
-                            overridePendingTransition(R.anim.slide_in_left,
-                                    R.anim.slide_out_right);
+//                startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.SessionFile));
+//                            overridePendingTransition(R.anim.slide_in_left,
+//                                    R.anim.slide_out_right);
 
 
-//                startActivity(new Intent(MainActivity.this, SessionsListActivity.class));
-//                overridePendingTransition(R.anim.slide_in_left,
-//                        R.anim.slide_out_right);
+                startActivity(new Intent(MainActivity.this, SessionsListActivity.class));
+                overridePendingTransition(R.anim.slide_in_left,
+                        R.anim.slide_out_right);
+                finish();
 //                builder.setTitle("Select Session");
 //                builder.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, new String[]{"New session", "Resume old session"}), new DialogInterface.OnClickListener() {
 //                    @Override
@@ -354,6 +356,7 @@ public class MainActivity extends AppCompatActivity implements
                 startActivity(new Intent(getBaseContext(), AboutClass.class));
                 overridePendingTransition(R.anim.slide_in_left,
                         R.anim.slide_out_right);
+                finish();
                 return true;
             case R.id.action_morebydev:
                 startActivity(new Intent(

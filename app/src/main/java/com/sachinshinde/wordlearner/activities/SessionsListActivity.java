@@ -1,5 +1,6 @@
 package com.sachinshinde.wordlearner.activities;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -9,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -53,8 +55,17 @@ public class SessionsListActivity extends AppCompatActivity {
             session.setLastUsed(0);
             sessionsList.add(session);
         }
-        RecyclerViewAdapter sessionListAdapter = new RecyclerViewAdapter(getBaseContext(), sessionsList);
+        RecyclerViewAdapter sessionListAdapter = new RecyclerViewAdapter(getBaseContext(), sessionsList, SessionsListActivity.this);
         recyclerView.setAdapter(sessionListAdapter);
+
+        findViewById(R.id.bNewSession).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(SessionsListActivity.this, CreateSessionActivity.class));
+                finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            }
+        });
 
     }
 
@@ -64,6 +75,7 @@ public class SessionsListActivity extends AppCompatActivity {
             case android.R.id.home:
                 finish();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                startActivity(new Intent(SessionsListActivity.this, MainActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -73,6 +85,7 @@ public class SessionsListActivity extends AppCompatActivity {
     public void onBackPressed() {
         finish();
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        startActivity(new Intent(SessionsListActivity.this, MainActivity.class));
         super.onBackPressed();
     }
 }

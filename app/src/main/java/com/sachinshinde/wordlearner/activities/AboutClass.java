@@ -26,6 +26,7 @@ public class AboutClass extends AppCompatActivity {
     public void onBackPressed() {
         finish();
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        startActivity(new Intent(AboutClass.this, MainActivity.class));
         super.onBackPressed();
     }
 

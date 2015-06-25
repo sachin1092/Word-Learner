@@ -41,6 +41,7 @@
             android:layout_toLeftOf="@+id/ibResumeSession"
             android:background="@drawable/item_background_transparent"
             android:clickable="true"
+            android:id="@+id/llShowSessionDetails"
             android:gravity="center_vertical"
             android:orientation="vertical"
             android:paddingLeft="10dp">

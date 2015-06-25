@@ -23,16 +23,23 @@
     <string name="ztoa">Z - A</string>
     <string name="mostrevisedfirst">Most revised first</string>
 
-    <array name="test_sessions">
-        <item>abc session</item>
-        <item>xyz session</item>
-        <item>pqr session</item>
-        <item>ljds session</item>
-        <item>fdjk session</item>
-    </array>
+
     <string name="title_activity_session_details">SessionDetailsActivity</string>
     <string name="undo">Undo Last Action</string>
     <string name="edit_word">Edit Word</string>
     <string name="speak">Speak</string>
+
+    <array name="sort_order">
+        <item>Ascending</item>
+        <item>Descending</item>
+        <item>Random</item>
+    </array>
+
+    <array name="sort_order_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </array>
+    <string name="title_activity_create_session">CreateSessionActivity</string>
 
 </resources>

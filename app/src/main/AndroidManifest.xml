@@ -57,6 +57,10 @@
             android:name=".activities.SessionDetailsActivity"
             android:label="@string/title_activity_session_details" >
         </activity>
+        <activity
+            android:name=".activities.CreateSessionActivity"
+            android:label="@string/title_activity_create_session" >
+        </activity>
     </application>
 
 </manifest>

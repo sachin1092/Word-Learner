@@ -37,68 +37,11 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
 
-        <!--<ImageButton-->
-            <!--android:id="@+id/bSpeak"-->
-            <!--android:layout_width="40dp"-->
-            <!--android:layout_height="40dp"-->
-            <!--android:layout_alignParentRight="true"-->
-            <!--android:layout_alignParentTop="true"-->
-            <!--android:background="@drawable/main_button_blue"-->
-            <!--android:padding="8dp"-->
-            <!--android:scaleType="fitCenter"-->
-            <!--android:src="@drawable/ic_volume_high" />-->
-
-        <!--<ProgressBar-->
-            <!--android:id="@+id/pbVoice"-->
-            <!--android:layout_width="40dp"-->
-            <!--android:layout_height="40dp"-->
-            <!--android:layout_alignParentRight="true"-->
-            <!--android:layout_alignParentTop="true"-->
-            <!--android:indeterminateOnly="true"-->
-            <!--android:visibility="gone" />-->
-
-        <!--<ImageButton-->
-            <!--android:id="@+id/bEdit"-->
-            <!--android:layout_width="40dp"-->
-            <!--android:layout_height="40dp"-->
-            <!--android:layout_marginRight="8dp"-->
-            <!--android:layout_toLeftOf="@+id/bSpeak"-->
-            <!--android:background="@drawable/main_button_yellow"-->
-            <!--android:padding="8dp"-->
-            <!--android:scaleType="fitCenter"-->
-            <!--android:src="@drawable/ic_pencil" />-->
-
-
-        <!--<ImageButton-->
-            <!--android:id="@+id/bCross"-->
-            <!--android:layout_width="40dp"-->
-            <!--android:layout_height="40dp"-->
-            <!--android:layout_alignParentTop="true"-->
-            <!--android:layout_alignParentLeft="true"-->
-            <!--android:background="@drawable/main_button_red"-->
-            <!--android:padding="8dp"-->
-            <!--android:scaleType="fitCenter"-->
-            <!--android:src="@drawable/ic_close" />-->
-
-
-        <!--<ImageButton-->
-            <!--android:id="@+id/bLinkify"-->
-            <!--android:layout_width="40dp"-->
-            <!--android:layout_height="40dp"-->
-            <!--android:layout_marginRight="8dp"-->
-            <!--android:layout_toLeftOf="@+id/bEdit"-->
-            <!--android:background="@drawable/main_button_green"-->
-            <!--android:padding="8dp"-->
-            <!--android:scaleType="fitCenter"-->
-            <!--android:src="@drawable/linkify"-->
-            <!--android:visibility="gone" />-->
-
         <TextView
             android:id="@+id/tvCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="5dp"
-            android:paddingTop="5dp"
             android:text="Total Count: 1000 words"
             android:textColor="@color/colorPrimary"
             android:textSize="15sp" />

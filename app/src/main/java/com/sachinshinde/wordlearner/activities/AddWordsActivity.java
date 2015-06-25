@@ -431,6 +431,7 @@ public class AddWordsActivity extends AppCompatActivity {
             case android.R.id.home:
                 finish();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                startActivity(new Intent(AddWordsActivity.this, MainActivity.class));
                 return true;
 //            case R.id.action_AtoZ:
 //                item.setChecked(true);
@@ -461,6 +462,7 @@ public class AddWordsActivity extends AppCompatActivity {
     public void onBackPressed() {
         finish();
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        startActivity(new Intent(AddWordsActivity.this, MainActivity.class));
         super.onBackPressed();
     }
 }

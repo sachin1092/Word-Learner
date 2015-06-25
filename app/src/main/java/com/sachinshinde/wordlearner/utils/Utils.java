@@ -65,21 +65,12 @@ public class Utils {
     public static final String INTENT_DELETE_WORD = "action.wordlearner.DELETEWORD";
     public static final String INTENT_REFRESH = "action.wordlearner.REFRESHWORD";
 
-
     public static void writeListToFile(ArrayList<String> list, String FileName) {
 
         Set<String> set = new TreeSet<String>();
         set.addAll(list);
         list.clear();
         list.addAll(set);
-
-//        for(int i = 0 ; i < list.size() ; i++){
-//            String item = list.get(i).toLowerCase(Locale.US);
-//            list.remove(i);
-//            if(!item.isEmpty())
-//                list.add(item);
-//
-//        }
 
 
         if (null == FileName)
@@ -131,13 +122,6 @@ public class Utils {
         list.clear();
         list.addAll(set);
 
-//        for(int i = 0 ; i < list.size() ; i++){
-//            String item = list.get(i).toLowerCase(Locale.US);
-//            list.remove(i);
-//            if(!item.isEmpty())
-//                list.add(item);
-//
-//        }
         return list;
     }
 

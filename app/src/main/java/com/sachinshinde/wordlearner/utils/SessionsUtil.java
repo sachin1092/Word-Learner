@@ -1,16 +1,22 @@
 package com.sachinshinde.wordlearner.utils;
 
+import android.content.Intent;
 import android.os.Environment;
 
 import com.sachinshinde.wordlearner.module.Session;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -21,6 +27,7 @@ public class SessionsUtil {
 
     private static final String MASTERED_FILE = "mastered";
     private static final String TO_REVISE = "to_revise";
+    private static final String SORT_FILE = "sort";
     private static final String SESSIONS_PATH = Environment.getExternalStorageDirectory().getPath() + "/WordLearner/Sessions";
 
     public static void saveSession(Session session) {
@@ -31,6 +38,7 @@ public class SessionsUtil {
             String path = SESSIONS_PATH + "/" + session.getSessionName();
             saveList(masteredList, path, MASTERED_FILE);
             saveList(toRevise, path, TO_REVISE);
+            saveText(session.getSortOrder() + "", path, SORT_FILE);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -50,6 +58,12 @@ public class SessionsUtil {
             session.setToRevise(toRevise);
             session.setSessionName(sessionName);
             session.setLastUsed(mFile.lastModified());
+            try {
+                session.setSortOrder(Integer.parseInt(loadText(path, SORT_FILE)));
+            }catch (Exception ex){
+                ex.printStackTrace();
+                session.setSortOrder(0);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -76,6 +90,7 @@ public class SessionsUtil {
 
 
     }
+
 
     private static void saveList(ArrayList<String> list, String path, String fileName) {
         Set<String> set = new TreeSet<String>();
@@ -131,6 +146,38 @@ public class SessionsUtil {
         list.clear();
         list.addAll(set);
         return list;
+    }
+
+    private static void saveText(String text, String path, String fileName) {
+        try {
+            File mFile = new File(path + "/" + fileName);
+            FileWriter fileWriter =
+                    new FileWriter(mFile);
+
+            BufferedWriter bufferedWriter =
+                    new BufferedWriter(fileWriter);
+
+            bufferedWriter.write(text);
+            bufferedWriter.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private static String loadText(String path, String fileName) {
+        String finalString = "";
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path + "/" + fileName));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                finalString += line;
+            }
+            reader.close();
+            return finalString;
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return "0";
     }
 
     public static void deleteSession(Session session) {

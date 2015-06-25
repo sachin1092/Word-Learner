@@ -11,17 +11,30 @@ public class Session {
     private ArrayList<String> mastered;
     private ArrayList<String> toRevise;
     private long lastUsed;
+    private int sortOrder;
+    public static final int ASCENDING = 0;
+    public static final int DECENDING = 1;
+    public static final int RANDOM = 2;
 
-    public Session(){
+    public Session() {
 
     }
 
-    public Session(String sessionName, ArrayList<String> mastered, ArrayList<String> toRevise, long lastUsed){
+    public Session(String sessionName, ArrayList<String> mastered, ArrayList<String> toRevise, long lastUsed, int sortOrder) {
 
         this.sessionName = sessionName;
         this.mastered = mastered;
         this.toRevise = toRevise;
         this.lastUsed = lastUsed;
+        this.sortOrder = sortOrder;
+    }
+
+    public int getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
     }
 
     public String getSessionName() {
@@ -33,7 +46,9 @@ public class Session {
     }
 
     public ArrayList<String> getMastered() {
-        return mastered;
+        if (mastered != null)
+            return mastered;
+        return new ArrayList<>();
     }
 
     public void setMastered(ArrayList<String> mastered) {
@@ -41,7 +56,9 @@ public class Session {
     }
 
     public ArrayList<String> getToRevise() {
-        return toRevise;
+        if(toRevise != null)
+            return toRevise;
+        return new ArrayList<>();
     }
 
     public void setToRevise(ArrayList<String> toRevise) {
@@ -55,4 +72,6 @@ public class Session {
     public void setLastUsed(long lastUsed) {
         this.lastUsed = lastUsed;
     }
+
+
 }
