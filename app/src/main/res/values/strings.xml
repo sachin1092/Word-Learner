@@ -23,4 +23,12 @@
     <string name="ztoa">Z - A</string>
     <string name="mostrevisedfirst">Most revised first</string>
 
+    <array name="test_sessions">
+        <item>abc session</item>
+        <item>xyz session</item>
+        <item>pqr session</item>
+        <item>ljds session</item>
+        <item>fdjk session</item>
+    </array>
+
 </resources>

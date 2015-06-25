@@ -15,9 +15,9 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.sachinshinde.wordlearner.ChangeLog;
+import com.sachinshinde.wordlearner.utils.ChangeLog;
 import com.sachinshinde.wordlearner.R;
-import com.sachinshinde.wordlearner.Utils;
+import com.sachinshinde.wordlearner.utils.Utils;
 
 
 public class AboutClass extends AppCompatActivity {
