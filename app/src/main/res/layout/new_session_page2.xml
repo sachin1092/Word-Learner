@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
+    <TextView
+        android:id="@+id/tvCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5dp"
+        android:text="Selected Count: 0 words"
+        android:textColor="@color/colorPrimary"
+        android:textSize="15sp" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/tvCount"
+        android:background="@color/colorPrimary"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp" />
+
+    <RelativeLayout
+        android:id="@+id/rlAddWords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/view"
+        android:layout_marginTop="5dp">
+
+
+
+        <EditText
+            android:id="@+id/etSearceWords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorPrimaryText"
+            android:hint="Search..."
+            android:nextFocusLeft="@id/etAddWords"
+            android:nextFocusUp="@id/etAddWords"
+            android:textColor="@color/colorPrimaryText" />
+
+        <ImageView
+            android:id="@+id/ivAddWords"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:padding="5dp"
+            android:src="@drawable/ic_close"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+    <!--<Button-->
+    <!--android:id="@+id/bAddWords"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_below="@+id/etAddWords"-->
+    <!--android:padding="5dp"-->
+    <!--android:text="Add" />-->
+
+    <ListView
+        android:id="@+id/lvWords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:choiceMode="multipleChoice"
+        android:layout_below="@+id/rlAddWords"
+        android:layout_margin="5dp"
+        android:fastScrollAlwaysVisible="true"
+        android:fastScrollEnabled="true">
+
+    </ListView>
+
+</RelativeLayout>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:padding="@dimen/activity_horizontal_margin"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="SESSION NAME:"
+        android:layout_marginLeft="5dp"
+        android:textSize="15sp" />
+
+    <LinearLayout
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="xyz Session"
+        android:id="@+id/etSessionName"/>
+
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="0.2dp"-->
+        <!--android:layout_margin="10dp"-->
+        <!--android:background="@color/colorDivider" />-->
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Sort Mode:"
+        android:layout_marginLeft="5dp"
+        android:textSize="15sp" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:id="@+id/spSessionSortMode"
+        android:layout_height="wrap_content"
+        android:entries="@array/sort_order"
+        android:layout_margin="10dp"/>
+
+</LinearLayout>
