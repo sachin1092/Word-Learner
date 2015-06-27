@@ -1,0 +1,7 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_start_session"
+        android:title="@string/undo"
+        android:icon="@drawable/ic_play"
+        app:showAsAction="always" />
+</menu>
