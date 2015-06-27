@@ -41,5 +41,6 @@
         <item>2</item>
     </array>
     <string name="title_activity_create_session">CreateSessionActivity</string>
+    <string name="title_activity_add_words_to_session">Add Words</string>
 
 </resources>

@@ -37,7 +37,7 @@ public class SessionsListActivity extends AppCompatActivity {
         try {
             final ActionBar ab = getSupportActionBar();
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            ab.setTitle("Sessions List");
+            ab.setTitle("Sessions");
         } catch (Exception ex){}
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();

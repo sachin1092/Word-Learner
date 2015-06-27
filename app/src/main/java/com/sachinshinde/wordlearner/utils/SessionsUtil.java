@@ -45,6 +45,21 @@ public class SessionsUtil {
 
     }
 
+    public static boolean renameSession(Session session, String newName){
+        String path = SESSIONS_PATH + "/" + session.getSessionName();
+        File mDir = new File(path);
+        return mDir.renameTo(new File(SESSIONS_PATH + "/" + newName));
+    }
+
+    public static boolean checkIfSessionNameExist(String sessionName){
+        File mDir = new File(SESSIONS_PATH);
+        for(File f : mDir.listFiles()){
+            if(f.getName().equals(sessionName))
+                return true;
+        }
+        return false;
+    }
+
     public static Session getSession(String sessionName) {
         Session session = new Session();
         try {

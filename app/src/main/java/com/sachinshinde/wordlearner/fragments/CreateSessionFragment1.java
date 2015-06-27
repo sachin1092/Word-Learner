@@ -56,9 +56,12 @@ public class CreateSessionFragment1 extends Fragment{
         return ((EditText)view.findViewById(R.id.etSessionName)).getText().toString();
     }
 
+    public EditText getEditText(){
+        return ((EditText) view.findViewById(R.id.etSessionName));
+    }
+
     public int getSortMode(){
         return ((Spinner)view.findViewById(R.id.spSessionSortMode)).getSelectedItemPosition();
     }
-
 
 }

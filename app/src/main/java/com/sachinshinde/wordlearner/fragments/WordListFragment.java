@@ -3,7 +3,11 @@ package com.sachinshinde.wordlearner.fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -72,7 +76,7 @@ public class WordListFragment extends Fragment implements AbsListView.OnItemClic
 
 //        mAdapter = new ArrayAdapter<>(getActivity(),
 //                android.R.layout.simple_list_item_1, android.R.id.text1, mList);
-        mAdapter = new ListAdapter(getActivity(), mList);
+//        mAdapter = new ListAdapter(getActivity(), mList);
     }
 
     @Override
@@ -82,12 +86,14 @@ public class WordListFragment extends Fragment implements AbsListView.OnItemClic
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        (mListView).setAdapter(mAdapter);
+//        (mListView).setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
         mListView.setOnItemLongClickListener(this);
         mListView.setFastScrollAlwaysVisible(true);
+
+        setHasOptionsMenu(true);
 
         return view;
     }
@@ -158,5 +164,35 @@ public class WordListFragment extends Fragment implements AbsListView.OnItemClic
         // TODO: Update argument type and name
         public boolean onFragmentLongPressInteraction(View view, String word, int type);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mAdapter = new ListAdapter(getActivity(), mList);
+        (mListView).setAdapter(mAdapter);
+    }
+
+
+//    @Override
+//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//        super.onCreateOptionsMenu(menu, inflater);
+//        inflater.inflate(R.menu.start_session, menu);
+//    }
+//
+//    @Override
+//    public void onPrepareOptionsMenu(Menu menu) {
+//        super.onPrepareOptionsMenu(menu);
+//        menu.findItem(R.id.action_start_session).setTitle("Start Session of " + (type == 0 ? "TODO" : "Mastered") + " Words");
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch(item.getItemId()){
+//            case R.id.action_start_session:
+//                return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
+
 
 }

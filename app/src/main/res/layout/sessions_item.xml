@@ -9,10 +9,28 @@
     swipe:rightEdgeSwipeOffset="0dp">
 
     <LinearLayout
-        android:layout_width="70dp"
+        android:layout_width="140dp"
         android:layout_height="70dp"
         android:gravity="center"
+        android:orientation="horizontal"
         android:tag="Bottom3">
+
+        <ImageView
+            android:id="@+id/edit"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:padding="15dp"
+            android:background="@drawable/item_background_transparent"
+            android:clickable="true"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:src="@drawable/ic_pencil"
+            android:tint="@color/main_button_yellow_normal" />
+
+        <View
+            android:layout_width="0.2dp"
+            android:layout_height="40dp"
+            android:background="@color/colorDivider" />
 
         <ImageView
             android:id="@+id/trash"
@@ -25,6 +43,8 @@
             android:layout_weight="1"
             android:src="@drawable/ic_delete"
             android:tint="@color/main_button_red_normal" />
+
+
 
     </LinearLayout>
 
@@ -91,7 +111,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:layout_marginRight="10dp"
+
             android:background="@color/colorDivider" />
 
     </RelativeLayout>

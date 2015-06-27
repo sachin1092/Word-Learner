@@ -32,4 +32,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-ads:7.5.0'
     compile 'net.rdrei.android.dirchooser:library:2.1@aar'
     compile 'com.daimajia.swipelayout:library:1.2.0@aar'
+    compile 'com.github.amlcurran.showcaseview:library:5.0.0'
 }

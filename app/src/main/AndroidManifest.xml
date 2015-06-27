@@ -61,6 +61,10 @@
             android:name=".activities.CreateSessionActivity"
             android:label="@string/title_activity_create_session" >
         </activity>
+        <activity
+            android:name=".activities.AddWordsToSessionActivity"
+            android:label="@string/title_activity_add_words_to_session" >
+        </activity>
     </application>
 
 </manifest>

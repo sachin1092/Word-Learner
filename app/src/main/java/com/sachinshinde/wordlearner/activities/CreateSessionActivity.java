@@ -1,5 +1,6 @@
 package com.sachinshinde.wordlearner.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -7,13 +8,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -54,15 +55,22 @@ public class CreateSessionActivity extends AppCompatActivity {
         findViewById(R.id.bCreateSessionNext).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (viewPager != null)
+                if (frag1.getEditText() != null) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(
+                            Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(frag1.getEditText().getWindowToken(), 0);
+                }
+                if (SessionsUtil.checkIfSessionNameExist(frag1.getSessionName())) {
+                    Toast.makeText(CreateSessionActivity.this, "Session name already exists.", Toast.LENGTH_SHORT).show();
+                } else if (viewPager != null)
                     if (viewPager.getCurrentItem() == 0) {
-                        if(frag1.getSessionName().isEmpty()){
+                        if (frag1.getSessionName().isEmpty()) {
                             Toast.makeText(CreateSessionActivity.this, "Session Name can't be empty.", Toast.LENGTH_LONG).show();
                             return;
                         }
                         viewPager.setCurrentItem(1, true);
                     } else {
-                        if(frag2.getTODOList().size() == 0){
+                        if (frag2.getTODOList().size() == 0) {
                             Toast.makeText(CreateSessionActivity.this, "Select at least a word.", Toast.LENGTH_SHORT).show();
                         } else {
                             Session session = new Session();

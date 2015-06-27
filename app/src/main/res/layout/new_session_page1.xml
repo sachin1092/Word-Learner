@@ -22,7 +22,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="xyz Session"
-        android:id="@+id/etSessionName"/>
+            android:id="@+id/etSessionName"/>
+
 
     <!--<View-->
         <!--android:layout_width="match_parent"-->
@@ -35,7 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Sort Mode:"
+        android:text="SORT MODE:"
         android:layout_marginLeft="5dp"
         android:textSize="15sp" />
 

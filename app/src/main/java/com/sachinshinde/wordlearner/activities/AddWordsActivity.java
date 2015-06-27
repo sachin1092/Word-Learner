@@ -196,6 +196,16 @@ public class AddWordsActivity extends AppCompatActivity {
         ttobj.setSpeechRate(0.8f);
 
         words = Utils.loadListFromFile(Utils.WordsFile);
+
+
+        if(words.size() == 0){
+            findViewById(R.id.tvNoWords).setVisibility(View.VISIBLE);
+            findViewById(R.id.wordListContainer).setVisibility(View.GONE);
+        } else {
+            findViewById(R.id.tvNoWords).setVisibility(View.GONE);
+            findViewById(R.id.wordListContainer).setVisibility(View.VISIBLE);
+        }
+
         sessionList = Utils.loadListFromFile(Utils.SessionFile);
 //        SerialPreference.retPrefs(getBaseContext());
         if (words == null) {

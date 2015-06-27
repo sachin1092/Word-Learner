@@ -80,6 +80,35 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
         ttobj.setLanguage(Locale.US);
 
         ttobj.setSpeechRate(0.8f);
+
+        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(SessionDetailsActivity.this, AddWordsToSessionActivity.class);
+                intent.putExtra(TestWordsActivity.SESSION_NAME, currentSession.getSessionName());
+                startActivityForResult(intent, 10921);
+                overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom);
+            }
+        });
+    }
+
+    /**
+     * Dispatch onResume() to fragments.  Note that for better inter-operation
+     * with older versions of the platform, at the point of this call the
+     * fragments attached to the activity are <em>not</em> resumed.  This means
+     * that in some cases the previous state may still be saved, not allowing
+     * fragment transactions that modify the state.  To correctly interact
+     * with fragments in their proper state, you should instead override
+     * {@link #onResumeFragments()}.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        currentSession = SessionsUtil.getSession(currentSession.getSessionName());
+        try {
+            todoFragment.setAdapter(currentSession.getToRevise());
+            masteredFragment.setAdapter(currentSession.getMastered());
+        }catch (Exception ex){}
     }
 
     private void setupViewPager(ViewPager viewPager) {
