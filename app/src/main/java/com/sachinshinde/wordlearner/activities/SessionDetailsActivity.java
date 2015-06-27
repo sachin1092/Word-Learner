@@ -1,5 +1,6 @@
 package com.sachinshinde.wordlearner.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -17,10 +18,14 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -33,6 +38,7 @@ import com.sachinshinde.wordlearner.utils.SessionsUtil;
 import com.sachinshinde.wordlearner.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -59,7 +65,7 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
 
         ab.setTitle(sessionName);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         if (viewPager != null) {
             setupViewPager(viewPager);
         }
@@ -81,13 +87,25 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
 
         ttobj.setSpeechRate(0.8f);
 
-        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.fabStartSession).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(SessionDetailsActivity.this, AddWordsToSessionActivity.class);
+                Intent intent = new Intent(SessionDetailsActivity.this, TestWordsActivity.class);
                 intent.putExtra(TestWordsActivity.SESSION_NAME, currentSession.getSessionName());
-                startActivityForResult(intent, 10921);
+                intent.putExtra(TestWordsActivity.SESSION_TYPE, viewPager.getCurrentItem() == 0 ? TestWordsActivity.SESSION_ALL : TestWordsActivity.SESSION_MASTERED);
+                startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom);
+                finish();
+            }
+        });
+
+        findViewById(R.id.fabStartSession).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+
+                Toast.makeText(SessionDetailsActivity.this, "Start Session of " + (viewPager.getCurrentItem() == 0 ? "TODO" : "Mastered") + " Words.", Toast.LENGTH_SHORT).show();
+
+                return true;
             }
         });
     }
@@ -127,6 +145,12 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
                 finish();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 startActivity(new Intent(SessionDetailsActivity.this, SessionsListActivity.class));
+                return true;
+            case R.id.action_add_words:
+                Intent intent = new Intent(SessionDetailsActivity.this, AddWordsToSessionActivity.class);
+                intent.putExtra(TestWordsActivity.SESSION_NAME, currentSession.getSessionName());
+                startActivityForResult(intent, 10921);
+                overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_bottom);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -316,4 +340,14 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
         dialog = builder.create();
         dialog.show();
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_session_details, menu);
+
+
+        return true;
+    }
+
 }

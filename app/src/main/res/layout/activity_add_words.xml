@@ -101,7 +101,7 @@
         <ListView
             android:id="@+id/lvWords"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_below="@+id/rlAddWords"
             android:layout_margin="5dp"
             android:fastScrollAlwaysVisible="true"
@@ -109,18 +109,19 @@
 
         </ListView>
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/bAddWords"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_plus" />
 
     </RelativeLayout>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/bAddWords"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:layout_alignBottom="@+id/wordListContainer"
-        android:src="@drawable/ic_plus" />
+
 
     <TextView
         android:layout_width="wrap_content"
@@ -133,10 +134,9 @@
         android:gravity="center"
         android:visibility="gone"
         android:textSize="20sp"
-        android:text="Sorry Captain, No words here."/>
+        android:text="Sorry Captain, No words here.\nImport words."/>
 
     <com.google.android.gms.ads.AdView
-        android:visibility="gone"
         android:id="@+id/adView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

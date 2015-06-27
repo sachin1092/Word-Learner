@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -25,7 +26,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements
         DirectoryChooserFragment.OnFragmentInteractionListener {
 
     private static final int FILE_SELECT_CODE = 0;
+    private static final String FIRST_TIME_HELP = "first_time";
     View mExportDialogView;
     View importDialogView;
     private DirectoryChooserFragment mDialog;
@@ -99,20 +105,74 @@ public class MainActivity extends AppCompatActivity implements
         return null;
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public class OneTimeThing extends AsyncTask<Void, Void, Void> {
 
+
+        private Context mContext;
+        public OneTimeThing(Context mContext) {
+            this.mContext = mContext;
+        }
+
+        private Animation createHintSwitchAnimation() {
+            Animation animation = new RotateAnimation(0, 360,
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+                    0.5f);
+            animation.setStartOffset(0);
+            animation.setDuration(1300);
+            animation.setRepeatCount(Animation.INFINITE);
+            animation.setRepeatMode(Animation.RESTART);
+            animation.setInterpolator(new DecelerateInterpolator());
+            animation.setFillAfter(true);
+
+            return animation;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            findViewById(R.id.rlsplash).setVisibility(View.VISIBLE);
+            findViewById(R.id.containerMain).setVisibility(View.GONE);
+            ((ImageView) findViewById(R.id.ivsplashedit))
+                    .setImageBitmap(Utils.loader(mContext));
+            (findViewById(R.id.ivsplashedit))
+                    .startAnimation(createHintSwitchAnimation());
+        }
+
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                Utils.unZipIt(getAssets().open("word_definitions.zip"), Utils.WORDS_PATH);
+                Utils.unZipIt(Utils.WORDS_PATH + File.separator + "Words.zip", Utils.WORDS_PATH + File.separator + "Words");
+                File mFile = new File(Utils.WORDS_PATH + File.separator + "Words.zip");
+                mFile.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            findViewById(R.id.rlsplash).setVisibility(View.GONE);
+            findViewById(R.id.containerMain).setVisibility(View.VISIBLE);
+            PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putBoolean(
+                    FIRST_TIME_HELP, false).commit();
+            initialise();
+        }
+
+    }
+
+    public void initialise(){
         mDialog = DirectoryChooserFragment.newInstance("Word Learner", null);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         try {
             final ActionBar ab = getSupportActionBar();
-//        ab.setHomeAsUpIndicator(R.drawable.word_learner);
             ab.setTitle("");
-//        ab.setDisplayHomeAsUpEnabled(true);
         } catch (Exception ex) {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -135,38 +195,10 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View view) {
 
-//                startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.SessionFile));
-//                            overridePendingTransition(R.anim.slide_in_left,
-//                                    R.anim.slide_out_right);
-
-
                 startActivity(new Intent(MainActivity.this, SessionsListActivity.class));
                 overridePendingTransition(R.anim.slide_in_left,
                         R.anim.slide_out_right);
                 finish();
-//                builder.setTitle("Select Session");
-//                builder.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, new String[]{"New session", "Resume old session"}), new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialogInterface, int i) {
-//                        if (i == 0) {
-//                            startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.WordsFile));
-//                            overridePendingTransition(R.anim.slide_in_left,
-//                                    R.anim.slide_out_right);
-//                        } else {
-//                            startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.SessionFile));
-//                            overridePendingTransition(R.anim.slide_in_left,
-//                                    R.anim.slide_out_right);
-//                        }
-//                    }
-//                });
-//                File mFile = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner/" + Utils.SessionFile);
-//                if (mFile.exists())
-//                    builder.show();
-//                else {
-//                    startActivity(new Intent(MainActivity.this, TestWordsActivity.class).putExtra("file", Utils.WordsFile));
-//                    overridePendingTransition(R.anim.slide_in_left,
-//                            R.anim.slide_out_right);
-//                }
             }
         });
 
@@ -228,8 +260,12 @@ public class MainActivity extends AppCompatActivity implements
         findViewById(R.id.buttonImport).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showFileChooser();
-                Toast.makeText(MainActivity.this, "Select a text file with words.", Toast.LENGTH_SHORT).show();
+//                showFileChooser();
+//                Toast.makeText(MainActivity.this, "Select a text file with words.", Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+                View mView = LayoutInflater.from(MainActivity.this).inflate(R.layout.import_dialog, null);
+                mBuilder.setView(mView);
+                mBuilder.show();
             }
         });
 
@@ -237,6 +273,25 @@ public class MainActivity extends AppCompatActivity implements
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
 
+
+        findViewById(R.id.buttonRemoveAds).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        if (PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(
+                FIRST_TIME_HELP, true)) {
+            new OneTimeThing(getBaseContext()).execute();
+        } else {
+            initialise();
+        }
     }
 
     private void showFileChooser() {
@@ -273,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements
 
                         registerReceiver(mProgressReceivers, new IntentFilter(DownloadService.NOTIFICATION));
 
-                        mImportDialog = getProgressBuilder(MainActivity.this, "<b>Please wait...</b><br/>Downloading definitions", "0 / 100").show();
+                        mImportDialog = getProgressBuilder(MainActivity.this, "<b>Please wait...</b><br/>Downloading definitions", "- / -").show();
 
                         Intent intent = new Intent(this, DownloadService.class);
                         intent.putExtra(DownloadService.FILEPATH, path);

@@ -162,10 +162,10 @@ public class DownloadService extends Service {
                 if (line.contains(" ")) {
                     String[] lines = line.split(" ");
                     for (String line1 : lines)
-                        if (checkWord(line)) list.add(line1.toLowerCase(Locale.US));
+                        if (checkWord(line)) list.add(line1.trim().toLowerCase(Locale.US));
                 } else {
                     if (checkWord(line))
-                        list.add(line.toLowerCase(Locale.US));
+                        list.add(line.trim().toLowerCase(Locale.US));
                 }
             }
             reader.close();
@@ -185,7 +185,7 @@ public class DownloadService extends Service {
 
         // Now create matcher object.
         Matcher m = r.matcher(str);
-        return m.find() && !str.isEmpty() && !Utils.hasWord(str);
+        return m.find() && !str.isEmpty();
     }
 
 
@@ -218,15 +218,20 @@ public class DownloadService extends Service {
                         return null;
                     }
 
+                    ArrayList<String> response = new ArrayList<>();
+
                     JSONArray jsonArray = new JSONArray();
                     for (String word : to_downloadList) {
-                        jsonArray.put(word);
+                        if(Utils.hasWord(word)){
+                            response.add(word);
+                        }else {
+                            jsonArray.put(word);
+                        }
                     }
 
 
                     JSONObject jsonObject = new JSONObject(NetworkUtils.POST(jsonArray.toString(), getBaseContext(), 0));
 
-                    ArrayList<String> response = new ArrayList<>();
 
                     Iterator<String> itr = jsonObject.keys();
                     while (itr.hasNext()) {

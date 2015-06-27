@@ -51,7 +51,7 @@ public class AboutClass extends AppCompatActivity {
 
             }
         });
-        Typeface tf = Typeface.createFromAsset(getAssets(), "cnlbold.ttf");
+        Typeface tf = Typeface.DEFAULT;
         TextView tv1 = (TextView) findViewById(R.id.tvAbout1);
         tv1.setTypeface(tf);
         TextView tv2 = (TextView) findViewById(R.id.tvAbout2);

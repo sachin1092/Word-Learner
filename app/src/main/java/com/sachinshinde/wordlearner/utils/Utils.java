@@ -6,6 +6,10 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -36,10 +40,15 @@ import com.sachinshinde.wordlearner.module.Word;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
@@ -51,6 +60,8 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by sachin on 21/10/14.
@@ -64,6 +75,7 @@ public class Utils {
     public static final String INTENT_ADD_WORD = "action.wordlearner.ADDWORD";
     public static final String INTENT_DELETE_WORD = "action.wordlearner.DELETEWORD";
     public static final String INTENT_REFRESH = "action.wordlearner.REFRESHWORD";
+    public static final String WORDS_PATH = Environment.getExternalStorageDirectory().getPath() + File.separator + "WordLearner";
 
     public static void writeListToFile(ArrayList<String> list, String FileName) {
 
@@ -195,10 +207,16 @@ public class Utils {
         String definition = "";
         try {
             if (mFile.exists()) {
-                FileInputStream fis = new FileInputStream(mFile);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                definition = (String) ois.readObject();
-                fis.close();
+//                FileInputStream fis = new FileInputStream(mFile);
+//                ObjectInputStream ois = new ObjectInputStream(fis);
+//                definition = (String) ois.readObject();
+//                fis.close();
+                BufferedReader reader = new BufferedReader(new FileReader(mFile));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    definition += line;
+                }
+                reader.close();
             } else {
                 return null;
             }
@@ -216,11 +234,20 @@ public class Utils {
         }
         File mFile = new File(mDir.getPath() + "/" + word);
         try {
+
             if (mFile.exists() || mFile.createNewFile()) {
-                FileOutputStream fos = new FileOutputStream(mFile);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                oos.writeObject(definition);
-                fos.close();
+                FileWriter fileWriter =
+                        new FileWriter(mFile);
+
+                // Always wrap FileWriter in BufferedWriter.
+                BufferedWriter bufferedWriter =
+                        new BufferedWriter(fileWriter);
+                bufferedWriter.write(definition);
+//                FileOutputStream fos = new FileOutputStream(mFile);
+//                ObjectOutputStream oos = new ObjectOutputStream(fos);
+//                oos.writeObject(definition);
+//                fos.close();
+                bufferedWriter.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -608,5 +635,194 @@ public class Utils {
             dialog.show();
         }
     }
+
+
+    public static Bitmap loader(Context mContext) {
+
+        int mLevel = 5;
+
+        Bitmap circleBitmap = Bitmap.createBitmap(
+                (int) (dpToPx(180, mContext)),
+                (int) (dpToPx(180, mContext)),
+                Bitmap.Config.ARGB_8888);
+
+        Bitmap cfoSize;
+
+        cfoSize = Bitmap.createBitmap(
+                (int) dpToPx(180, mContext),
+                dpToPx(180, mContext), Bitmap.Config.ARGB_8888);
+
+        Paint paint = new Paint();
+        paint.setAlpha(220);
+        paint.setAntiAlias(true);
+
+        Canvas c = new Canvas(circleBitmap);
+
+        Paint mypaint = new Paint();
+        mypaint.setAntiAlias(true);
+
+        mypaint.setStrokeWidth((float) (cfoSize.getWidth() * 0.0253));
+
+        mypaint.setStyle(Paint.Style.STROKE);
+        mypaint.setAntiAlias(true);
+
+        mypaint.setColor(0xffffffff);
+
+        float left = (float) (cfoSize.getWidth() * 0.05);
+        float top = (float) (cfoSize.getWidth() * 0.05);
+        float right = cfoSize.getWidth() - (float) (cfoSize.getHeight() * 0.05);
+        float bottom = cfoSize.getHeight()
+                - (float) (cfoSize.getWidth() * 0.05);
+
+        RectF rectf = new RectF(left, top, right, bottom);
+
+        float angle = mLevel * 360;
+        angle = angle / 100;
+
+        for (int i = 1; i <= 24; i++) {
+            c.drawArc(rectf, -88 + ((i - 1) * 11) + (i - 1) * 4, 11, false,
+                    mypaint);
+        }
+
+        mypaint.setStrokeWidth((float) (cfoSize.getWidth() * 0.0783));
+
+        mypaint.setColor(0xff33b5e5);
+
+        int i;
+        for (i = 1; i <= (angle / 15); i++)
+            c.drawArc(rectf, -88 + ((i - 1) * 11) + (i - 1) * 4, 11, false,
+                    mypaint);
+        if (angle > -88 + ((i - 1) * 11) + (i - 1) * 4) {
+            angle = angle - magnitude(angle);
+            c.drawArc(rectf, -88 + ((i - 1) * 11) + (i - 1) * 4, angle, false,
+                    mypaint);
+        }
+
+        return circleBitmap;
+
+    }
+
+    public static float magnitude(float angle) {
+        String t = String.valueOf(angle);
+        if ((t).contains(".")) {
+            t = t.substring(0, t.indexOf("."));
+        }
+        return Float.parseFloat(t);
+    }
+
+
+    /**
+     * Unzip it
+     *
+     * @param zipFile input zip file
+     * @param outputFolder  zip file output folder
+     */
+    public static void unZipIt(String zipFile, String outputFolder) {
+
+        byte[] buffer = new byte[1024];
+
+        try {
+
+            //create output directory is not exists
+            File folder = new File(outputFolder);
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+
+            //get the zip file content
+            ZipInputStream zis =
+                    new ZipInputStream(new FileInputStream(zipFile));
+            //get the zipped file list entry
+            ZipEntry ze = zis.getNextEntry();
+
+            while (ze != null) {
+
+                String fileName = ze.getName();
+                File newFile = new File(outputFolder + File.separator + fileName);
+
+                System.out.println("file unzip : " + newFile.getAbsoluteFile());
+
+                //create all non exists folders
+                //else you will hit FileNotFoundException for compressed folder
+                new File(newFile.getParent()).mkdirs();
+
+                FileOutputStream fos = new FileOutputStream(newFile);
+
+                int len;
+                while ((len = zis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, len);
+                }
+
+                fos.close();
+                ze = zis.getNextEntry();
+            }
+
+            zis.closeEntry();
+            zis.close();
+
+            System.out.println("Done");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Unzip it
+     *
+     * @param zipFile input zip file
+     * @param outputFolder  zip file output folder
+     */
+    public static void unZipIt(InputStream zipFile, String outputFolder) {
+
+        byte[] buffer = new byte[1024];
+
+        try {
+
+            //create output directory is not exists
+            File folder = new File(outputFolder);
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
+            //get the zip file content
+            ZipInputStream zis =
+                    new ZipInputStream(zipFile);
+            //get the zipped file list entry
+            ZipEntry ze = zis.getNextEntry();
+
+            while (ze != null) {
+
+                String fileName = ze.getName();
+                File newFile = new File(outputFolder + File.separator + fileName);
+
+                System.out.println("file unzip : " + newFile.getAbsoluteFile());
+
+                //create all non exists folders
+                //else you will hit FileNotFoundException for compressed folder
+                new File(newFile.getParent()).mkdirs();
+
+                FileOutputStream fos = new FileOutputStream(newFile);
+
+                int len;
+                while ((len = zis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, len);
+                }
+
+                fos.close();
+                ze = zis.getNextEntry();
+            }
+
+            zis.closeEntry();
+            zis.close();
+
+            System.out.println("Done");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
 
 }

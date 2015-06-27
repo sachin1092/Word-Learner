@@ -44,20 +44,25 @@ import java.util.Random;
 public class TestWordsActivity extends AppCompatActivity {
 
     public static final String SESSION_NAME = "session_name";
+    public static final String SESSION_TYPE = "session_type";
+    public static final int SESSION_ALL = 0;
+    public static final int SESSION_MASTERED = 1;
 
     ArrayList<String> words = new ArrayList<String>();
     ArrayList<String> mastered = new ArrayList<String>();
+    ArrayList<String> revise = new ArrayList<String>();
     TextView tvWord;
     GetMeaning getMeaning;
     private TextToSpeech ttobj;
     int index = 0;
     Session currentSession;
+    int sessionType;
 
 
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction() != null) {
+            if (intent.getAction() != null) {
                 if (intent.getAction().equalsIgnoreCase(Utils.INTENT_ADD_WORD)) {
                     Toast.makeText(getBaseContext(), "Added " + intent.getStringExtra("WORD"), Toast.LENGTH_LONG).show();
                     addWord(intent.getStringExtra("WORD"));
@@ -72,6 +77,8 @@ public class TestWordsActivity extends AppCompatActivity {
     private void deleteWord(String word) {
         Utils.deleteWord(word);
         words.remove(word);
+        mastered.remove(word);
+        revise.remove(word);
         saveSession();
         sortWords();
         ArrayList<String> toSave = Utils.loadListFromFile(Utils.WordsFile);
@@ -83,6 +90,7 @@ public class TestWordsActivity extends AppCompatActivity {
 
     private void addWord(String word) {
         words.add(word);
+        revise.add(word);
         saveSession();
         sortWords();
         ArrayList<String> toSave = Utils.loadListFromFile(Utils.WordsFile);
@@ -133,7 +141,9 @@ public class TestWordsActivity extends AppCompatActivity {
             final ActionBar ab = getSupportActionBar();
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close);
             ab.setTitle("");
-        } catch (Exception ex){}
+        } catch (Exception ex) {
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -143,10 +153,13 @@ public class TestWordsActivity extends AppCompatActivity {
         String sessionName = getIntent().getStringExtra(SESSION_NAME);
         currentSession = SessionsUtil.getSession(sessionName);
 
-        words = currentSession.getToRevise();
-        mastered = currentSession.getMastered();
+        sessionType = getIntent().getIntExtra(SESSION_TYPE, SESSION_ALL);
 
-//                SerialPreference.retPrefs(getBaseContext());
+        mastered.addAll(currentSession.getMastered());
+        revise.addAll(currentSession.getToRevise());
+
+        words.addAll(sessionType == SESSION_ALL ? currentSession.getToRevise() : currentSession.getMastered());
+
         if (words == null || words.isEmpty()) {
             Toast.makeText(getBaseContext(), "Sorry, no words. Add words first.", Toast.LENGTH_LONG).show();
             finish();
@@ -164,7 +177,7 @@ public class TestWordsActivity extends AppCompatActivity {
         }
 //        ((TextView) findViewById(R.id.tvMeaning)).setText("");
 
-        ((FrameLayout)findViewById(R.id.pbMeaning)).addView(Utils.getProgressView(TestWordsActivity.this, "Loading..."));
+        ((FrameLayout) findViewById(R.id.pbMeaning)).addView(Utils.getProgressView(TestWordsActivity.this, "Loading..."));
 
         findViewById(R.id.pbMeaning).setVisibility(View.GONE);
 
@@ -181,6 +194,11 @@ public class TestWordsActivity extends AppCompatActivity {
                 findViewById(R.id.flWordsContainer).setVisibility(View.GONE);
                 setUndoVisibility(true);
                 addAgain = false;
+
+                if (sessionType == SESSION_MASTERED) {
+                    mastered.remove(lastItem);
+                    revise.add(lastItem);
+                }
             }
         });
 
@@ -188,8 +206,9 @@ public class TestWordsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 lastItem = tvWord.getText().toString();
-                words.remove(tvWord.getText().toString());
-                mastered.add(tvWord.getText().toString());
+                words.remove(lastItem);
+                mastered.add(lastItem);
+                revise.remove(lastItem);
                 saveSession();
                 sortWords();
                 tvWord.setText(getNextWord(currentSession.getSortOrder()));
@@ -233,7 +252,7 @@ public class TestWordsActivity extends AppCompatActivity {
     }
 
     private void sortWords() {
-        switch (currentSession.getSortOrder()){
+        switch (currentSession.getSortOrder()) {
             case Session.ASCENDING:
                 Collections.sort(words);
                 break;
@@ -247,7 +266,7 @@ public class TestWordsActivity extends AppCompatActivity {
     }
 
     private void saveSession() {
-        currentSession.setToRevise(words);
+        currentSession.setToRevise(revise);
         currentSession.setMastered(mastered);
         SessionsUtil.saveSession(currentSession);
     }
@@ -256,20 +275,29 @@ public class TestWordsActivity extends AppCompatActivity {
     String lastItem;
     boolean addAgain = false;
 
-    public void undoLastAction(){
+    public void undoLastAction() {
+
         tvWord.setText(lastItem);
-        if(addAgain){
+        if (addAgain) {
+
             words.add(lastItem);
             sortWords();
             findViewById(R.id.flWordsContainer).setVisibility(View.GONE);
-            mastered.remove(lastItem);
+            if (sessionType == SESSION_ALL) {
+                mastered.remove(lastItem);
+            }
             saveSession();
             ((TextView) findViewById(R.id.tvCount)).setText(words.size() + " WORDS TO GO.");
+        }else{
+            if (sessionType == SESSION_MASTERED) {
+                mastered.add(lastItem);
+                revise.remove(lastItem);
+            }
         }
         setUndoVisibility(false);
     }
 
-    public String getNextWord(int sortOrder){
+    public String getNextWord(int sortOrder) {
         if (words.size() == 0 || words.isEmpty()) {
             Toast.makeText(getBaseContext(), "You have finished all the words, Congratulations!! :)", Toast.LENGTH_LONG).show();
             findViewById(R.id.bMeaning).setVisibility(View.GONE);
@@ -277,7 +305,7 @@ public class TestWordsActivity extends AppCompatActivity {
             findViewById(R.id.bNo).setVisibility(View.GONE);
             return "Congratulations!!";
         }
-        switch (sortOrder){
+        switch (sortOrder) {
             case Session.ASCENDING:
             case Session.DECENDING:
             default:
@@ -295,7 +323,7 @@ public class TestWordsActivity extends AppCompatActivity {
     }
 
     public void setUndoVisibility(boolean undoVisibility) {
-        if(undoItem != null){
+        if (undoItem != null) {
             undoItem.setVisible(undoVisibility);
         }
     }
@@ -324,9 +352,9 @@ public class TestWordsActivity extends AppCompatActivity {
                     ((ScrollView) findViewById(R.id.flWordsContainer)).fullScroll(ScrollView.FOCUS_UP);
                 }
             }, 50);
-            ((ScrollView)findViewById(R.id.flWordsContainer)).removeAllViews();
+            ((ScrollView) findViewById(R.id.flWordsContainer)).removeAllViews();
 
-            if(mView != null) {
+            if (mView != null) {
                 ((ScrollView) findViewById(R.id.flWordsContainer)).addView(mView);
 
             } else {
