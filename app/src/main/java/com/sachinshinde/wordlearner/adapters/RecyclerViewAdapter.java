@@ -69,6 +69,14 @@ public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapte
     private ArrayList<Session> mDataset;
     private SessionsListActivity sessionsListActivity;
 
+    public void setDataList(ArrayList<Session> mDataset){
+        this.mDataset = (ArrayList<Session>) mDataset.clone();
+    }
+
+    public ArrayList<Session> getArrayList(){
+        return this.mDataset;
+    }
+
     //protected SwipeItemRecyclerMangerImpl mItemManger = new SwipeItemRecyclerMangerImpl(this);
 
     public RecyclerViewAdapter(Context context, ArrayList<Session> objects, SessionsListActivity sessionsListActivity) {
@@ -122,9 +130,14 @@ public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapte
                         notifyItemInserted(position);
                         notifyItemRangeChanged(position, mDataset.size());
                         mItemManger.closeAllItems();
+                        sessionsListActivity.sendBroadcast(new Intent(SessionsListActivity.INTENT_REFRESH_VIEW));
                     }
                 });
                 sbar.show();
+
+
+
+                sessionsListActivity.sendBroadcast(new Intent(SessionsListActivity.INTENT_REFRESH_VIEW));
             }
         });
 
@@ -202,4 +215,6 @@ public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapte
     public int getSwipeLayoutResourceId(int position) {
         return R.id.swipe;
     }
+
+
 }

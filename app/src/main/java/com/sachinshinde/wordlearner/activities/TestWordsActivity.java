@@ -23,10 +23,14 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.Target;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.sachinshinde.wordlearner.R;
@@ -41,7 +45,7 @@ import java.util.Locale;
 import java.util.Random;
 
 
-public class TestWordsActivity extends AppCompatActivity {
+public class TestWordsActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String SESSION_NAME = "session_name";
     public static final String SESSION_TYPE = "session_type";
@@ -73,6 +77,8 @@ public class TestWordsActivity extends AppCompatActivity {
             }
         }
     };
+    private ShowcaseView showcaseView;
+    private boolean mIsPremium;
 
     private void deleteWord(String word) {
         Utils.deleteWord(word);
@@ -246,9 +252,37 @@ public class TestWordsActivity extends AppCompatActivity {
         ttobj.setLanguage(Locale.US);
 
 
-        AdView mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
+        showcaseView = new ShowcaseView.Builder(this)
+                .setTarget(Target.NONE).singleShot(10922)
+                .setOnClickListener(this)
+                .setStyle(R.style.CustomShowcaseTheme)
+                .build();
+        showcaseView.setShowcase(new ViewTarget(findViewById(R.id.bMeaning)), true);
+        showcaseView.setContentTitle("Show meaning");
+        showcaseView.setContentText("Click here to show meaning.");
+        showcaseView.setButtonText("Next");
+
+//            AttributeSet attr = apiUtils.
+        RelativeLayout.LayoutParams mLayoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        mLayoutParams.setMargins(50, 0, 0, 200);
+        showcaseView.setButtonPosition(mLayoutParams);
+
+        mIsPremium = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext())
+                .getString("re", "ezq").equalsIgnoreCase("qze");
+        if(mIsPremium) {
+            findViewById(R.id.adView).setVisibility(View.GONE);
+        }else{
+
+            AdView mAdView = (AdView) findViewById(R.id.adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
+            findViewById(R.id.adView).setVisibility(View.VISIBLE);
+
+        }
     }
 
     private void sortWords() {
@@ -305,15 +339,20 @@ public class TestWordsActivity extends AppCompatActivity {
             findViewById(R.id.bNo).setVisibility(View.GONE);
             return "Congratulations!!";
         }
-        switch (sortOrder) {
-            case Session.ASCENDING:
-            case Session.DECENDING:
-            default:
-                Log.d("Index", index + "");
-                Log.d("Words", words.toString());
-                return words.get(index);
-            case Session.RANDOM:
-                return getRandomWord();
+        try {
+            switch (sortOrder) {
+                case Session.ASCENDING:
+                case Session.DECENDING:
+                default:
+                    Log.d("Index", index + "");
+                    Log.d("Words", words.toString());
+                    return words.get(index);
+                case Session.RANDOM:
+                    return getRandomWord();
+            }
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return words.get(0);
         }
     }
 
@@ -326,6 +365,30 @@ public class TestWordsActivity extends AppCompatActivity {
         if (undoItem != null) {
             undoItem.setVisible(undoVisibility);
         }
+    }
+
+    private int counter = 0;
+    @Override
+    public void onClick(View view) {
+        switch (counter) {
+            case 0:
+                showcaseView.setShowcase(new ViewTarget(findViewById(R.id.bYes)), true);
+                showcaseView.setContentTitle("I know");
+                showcaseView.setContentText("Click here to mark word as mastered.");
+                break;
+
+            case 1:
+                showcaseView.setShowcase(new ViewTarget(findViewById(R.id.bNo)), true);
+                showcaseView.setContentTitle("Revise");
+                showcaseView.setContentText("Click here to revise this word again.");
+                showcaseView.setButtonText("GOT IT");
+                break;
+
+            case 2:
+                showcaseView.hide();
+                break;
+        }
+        counter++;
     }
 
     public class GetMeaning extends AsyncTask<String, Void, String> {

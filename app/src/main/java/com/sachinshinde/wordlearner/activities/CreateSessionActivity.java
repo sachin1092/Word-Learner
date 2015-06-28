@@ -80,6 +80,8 @@ public class CreateSessionActivity extends AppCompatActivity {
                             session.setSortOrder(frag1.getSortMode());
                             SessionsUtil.saveSession(session);
 
+                            sendBroadcast(new Intent(SessionsListActivity.INTENT_REFRESH));
+
                             Intent intent = new Intent(CreateSessionActivity.this, TestWordsActivity.class);
                             intent.putExtra(TestWordsActivity.SESSION_NAME, session.getSessionName());
                             startActivity(intent);

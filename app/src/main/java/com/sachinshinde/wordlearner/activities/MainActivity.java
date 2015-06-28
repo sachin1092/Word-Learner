@@ -1,25 +1,33 @@
 package com.sachinshinde.wordlearner.activities;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +37,7 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -38,13 +47,23 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.sachinshinde.wordlearner.R;
 import com.sachinshinde.wordlearner.module.Meaning;
+import com.sachinshinde.wordlearner.module.Session;
 import com.sachinshinde.wordlearner.module.SubWords;
 import com.sachinshinde.wordlearner.module.Word;
+import com.sachinshinde.wordlearner.module.Words_1454;
+import com.sachinshinde.wordlearner.module.Words_3817;
+import com.sachinshinde.wordlearner.module.Words_4178;
 import com.sachinshinde.wordlearner.services.DownloadService;
+import com.sachinshinde.wordlearner.util.IabHelper;
+import com.sachinshinde.wordlearner.util.IabResult;
+import com.sachinshinde.wordlearner.util.Inventory;
+import com.sachinshinde.wordlearner.util.Purchase;
+import com.sachinshinde.wordlearner.utils.Constants;
 import com.sachinshinde.wordlearner.utils.FilePath;
 import com.sachinshinde.wordlearner.utils.NetworkUtils;
 import com.sachinshinde.wordlearner.utils.ProcessWord;
 import com.sachinshinde.wordlearner.utils.SerialPreference;
+import com.sachinshinde.wordlearner.utils.SessionsUtil;
 import com.sachinshinde.wordlearner.utils.Utils;
 
 import net.rdrei.android.dirchooser.DirectoryChooserFragment;
@@ -83,6 +102,9 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
     private android.support.v7.app.AlertDialog mExportDialog;
+    private boolean alreadyOpened = false;
+    private boolean firsttime = false;
+
 
     public static String getPath(Context context, Uri uri) throws URISyntaxException {
         if ("content".equalsIgnoreCase(uri.getScheme())) {
@@ -95,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (cursor.moveToFirst()) {
                     return cursor.getString(column_index);
                 }
+                cursor.close();
             } catch (Exception e) {
                 // Eat it
             }
@@ -109,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
         private Context mContext;
+
         public OneTimeThing(Context mContext) {
             this.mContext = mContext;
         }
@@ -160,12 +184,17 @@ public class MainActivity extends AppCompatActivity implements
             findViewById(R.id.containerMain).setVisibility(View.VISIBLE);
             PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putBoolean(
                     FIRST_TIME_HELP, false).commit();
+
             initialise();
+
+            findViewById(R.id.buttonImport).performClick();
+            Toast.makeText(MainActivity.this, "Please import a word list to continue.", Toast.LENGTH_LONG).show();
+
         }
 
     }
 
-    public void initialise(){
+    public void initialise() {
         mDialog = DirectoryChooserFragment.newInstance("Word Learner", null);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -260,24 +289,162 @@ public class MainActivity extends AppCompatActivity implements
         findViewById(R.id.buttonImport).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                showFileChooser();
-//                Toast.makeText(MainActivity.this, "Select a text file with words.", Toast.LENGTH_SHORT).show();
                 AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
                 View mView = LayoutInflater.from(MainActivity.this).inflate(R.layout.import_dialog, null);
                 mBuilder.setView(mView);
-                mBuilder.show();
+                if (PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(
+                        FIRST_TIME_HELP + "_import_dialog", true)) {
+                    mBuilder.setCancelable(false);
+                }
+
+                mBuilder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putBoolean(
+                                FIRST_TIME_HELP + "_import_dialog", false).commit();
+                        alreadyOpened = false;
+
+
+                    }
+                });
+
+                final AlertDialog mMyImportDialog = mBuilder.create();
+                if (!alreadyOpened) {
+                    mMyImportDialog.show();
+                }
+                alreadyOpened = true;
+
+                mBuilder.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialogInterface, int i, KeyEvent keyEvent) {
+                        if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                            if (PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(
+                                    FIRST_TIME_HELP + "_import_dialog", true)) {
+                                Toast.makeText(MainActivity.this, "Please import a word list first.", Toast.LENGTH_SHORT).show();
+                                return true;
+                            }
+
+                        }
+                        mMyImportDialog.dismiss();
+                        return false;
+                    }
+                });
+
+
+                mView.findViewById(R.id.import1454).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ArrayList<String> words = Utils.loadListFromFile(Utils.WordsFile);
+                        words.addAll(new Words_1454().import1454);
+                        Utils.writeListToFile(words, Utils.WordsFile);
+                        Toast.makeText(MainActivity.this, "Words Added Successfully", Toast.LENGTH_SHORT).show();
+                        if (SessionsUtil.getSessionCount() == 0 && words.size() > 0) {
+                            Session session = new Session();
+                            session.setSessionName("All Words");
+                            session.setSortOrder(0);
+                            session.setMastered(new ArrayList<String>());
+                            session.setToRevise(Utils.loadListFromFile(Utils.WordsFile));
+                            SessionsUtil.saveSession(session);
+                        }
+                        mMyImportDialog.dismiss();
+                    }
+                });
+
+                mView.findViewById(R.id.import3817).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ArrayList<String> words = Utils.loadListFromFile(Utils.WordsFile);
+                        words.addAll(new Words_3817().import3817);
+                        Utils.writeListToFile(words, Utils.WordsFile);
+                        Toast.makeText(MainActivity.this, "Words Added Successfully", Toast.LENGTH_SHORT).show();
+                        if (SessionsUtil.getSessionCount() == 0 && words.size() > 0) {
+                            Session session = new Session();
+                            session.setSessionName("All Words");
+                            session.setSortOrder(0);
+                            session.setMastered(new ArrayList<String>());
+                            session.setToRevise(Utils.loadListFromFile(Utils.WordsFile));
+                            SessionsUtil.saveSession(session);
+                        }
+                        mMyImportDialog.dismiss();
+                    }
+                });
+
+                mView.findViewById(R.id.import4178).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ArrayList<String> words = Utils.loadListFromFile(Utils.WordsFile);
+                        words.addAll(new Words_4178().import4178);
+                        Utils.writeListToFile(words, Utils.WordsFile);
+                        Toast.makeText(MainActivity.this, "Words Added Successfully", Toast.LENGTH_SHORT).show();
+
+                        if (SessionsUtil.getSessionCount() == 0 && words.size() > 0) {
+                            Session session = new Session();
+                            session.setSessionName("All Words");
+                            session.setSortOrder(0);
+                            session.setMastered(new ArrayList<String>());
+                            session.setToRevise(Utils.loadListFromFile(Utils.WordsFile));
+                            SessionsUtil.saveSession(session);
+
+                        }
+                        mMyImportDialog.dismiss();
+                    }
+                });
+
+                mView.findViewById(R.id.importChoice).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        mMyImportDialog.dismiss();
+
+                        if (PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(
+                                FIRST_TIME_HELP + "_import", true)) {
+                            PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putBoolean(
+                                    FIRST_TIME_HELP + "_import", false).commit();
+                            AlertDialog.Builder mHelpBuilder = new AlertDialog.Builder(MainActivity.this);
+                            mHelpBuilder.setView(R.layout.import_help);
+                            mHelpBuilder.setPositiveButton("GOT IT", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Toast.makeText(MainActivity.this, "Select a text file with words.", Toast.LENGTH_SHORT).show();
+                                    showFileChooser();
+                                }
+                            });
+
+                            mHelpBuilder.show();
+
+                        } else {
+                            Toast.makeText(MainActivity.this, "Select a text file with words.", Toast.LENGTH_SHORT).show();
+                            showFileChooser();
+                        }
+
+                    }
+                });
+
             }
         });
 
-        AdView mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
+
+
+            findViewById(R.id.adView).setVisibility(View.GONE);
+            findViewById(R.id.buttonRemoveAds).setVisibility(View.GONE);
+
 
 
         findViewById(R.id.buttonRemoveAds).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                AlertDialog.Builder mDonateBuilder = new AlertDialog.Builder(MainActivity.this);
+                mDonateBuilder.setTitle("Remove Ads by Donation");
+                mDonateBuilder.setAdapter(new ArrayAdapter<String>(getBaseContext(),
+                        android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.donate_amount)), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        onUpgradeAppButtonClicked(i);
+                    }
+                });
 
+                mDonateBuilder.setNegativeButton("CANCEL", null);
+                mDonateBuilder.show();
             }
         });
     }
@@ -289,9 +456,56 @@ public class MainActivity extends AppCompatActivity implements
         if (PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(
                 FIRST_TIME_HELP, true)) {
             new OneTimeThing(getBaseContext()).execute();
+            firsttime = true;
         } else {
             initialise();
         }
+
+        if (Utils.getAppCount(getBaseContext()) == PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext()).getInt("showAt",
+                        20)) {
+
+            showRateDialog();
+        }
+        Utils.incAppCount(getBaseContext());
+
+        try {
+            setUpBillings();
+        } catch (Exception ex) {
+        }
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        ArrayList<String> wordsList = Utils.loadListFromFile(Utils.WordsFile);
+        if (!firsttime) {
+
+            if (wordsList == null || wordsList.size() == 0) {
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putBoolean(
+                        FIRST_TIME_HELP + "_import_dialog", true).commit();
+                Toast.makeText(MainActivity.this, "Please import a word list to continue.", Toast.LENGTH_LONG).show();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        findViewById(R.id.buttonImport).performClick();
+                    }
+                }, 200);
+
+            }
+        }
+
+        if (wordsList != null)
+            if (SessionsUtil.getSessionCount() == 0 && wordsList.size() > 0) {
+                Session session = new Session();
+                session.setSessionName("All Words");
+                session.setSortOrder(0);
+                session.setMastered(new ArrayList<String>());
+                session.setToRevise(Utils.loadListFromFile(Utils.WordsFile));
+                SessionsUtil.saveSession(session);
+            }
     }
 
     private void showFileChooser() {
@@ -339,6 +553,8 @@ public class MainActivity extends AppCompatActivity implements
                     }
                     Log.d("Word Learner", "File Path: " + path);
                 }
+                break;
+            case RC_REQUEST:
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -390,6 +606,12 @@ public class MainActivity extends AppCompatActivity implements
         try {
             importDialogView = null;
             unregisterReceiver(mProgressReceivers);
+        } catch (Exception ex) {
+        }
+        try {
+            if (mHelper != null)
+                mHelper.dispose();
+            mHelper = null;
         } catch (Exception ex) {
         }
     }
@@ -598,5 +820,297 @@ public class MainActivity extends AppCompatActivity implements
             return null;
         }
     }
+
+
+    private void showRateDialog() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(
+                MainActivity.this);
+        builder.setTitle("Rate");
+        builder.setIcon(R.drawable.word_learner);
+        builder.setMessage("Rate and support us.");
+        builder.setPositiveButton("Rate Now", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                    Utils.launchMarket(getBaseContext(), getPackageName());
+
+            }
+        });
+
+        builder.setNegativeButton("Later", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                SharedPreferences getPrefs = PreferenceManager
+                        .getDefaultSharedPreferences(getBaseContext());
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
+                        .putInt("showAt", 2 * getPrefs.getInt("showAt", 10))
+                        .commit();
+            }
+        });
+        builder.show();
+
+    }
+
+    //Billing related code premium upgrade (non-consumable) and gas
+    // (consumable)
+    static final String SKU_PREMIUM1 = "word_learner_2.99";
+    static final String SKU_PREMIUM2 = "word_learner_4.99";
+    static final String SKU_PREMIUM3 = "word_learner_9.99";
+
+    // (arbitrary) request code for the purchase flcow
+    static final int RC_REQUEST = 100011;
+    static final int RC_REQUEST_299 = 100012;
+    static final int RC_REQUEST_499 = 100013;
+
+    private IabHelper mHelper;
+
+    boolean mIsPremium = false;
+    // SKUs for our products: the
+    // User clicked the "Upgrade to Premium" button.
+    public void onUpgradeAppButtonClicked(final int choice) {
+        Log.d("WordLearner", "Upgrade button clicked; launching purchase flow for upgrade.");
+        String SKU_PREMIUM = SKU_PREMIUM1;
+        switch(choice){
+            case 0:
+                SKU_PREMIUM = SKU_PREMIUM1;
+                break;
+            case 1:
+                SKU_PREMIUM = SKU_PREMIUM2;
+                break;
+            case 2:
+                SKU_PREMIUM = SKU_PREMIUM3;
+                break;
+        }
+
+        try {
+
+            mHelper.launchPurchaseFlow(MainActivity.this, SKU_PREMIUM,
+                    RC_REQUEST, mPurchaseFinishedListener, generatePayLoad());
+        } catch (Exception ex) {
+
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        String SKU_PREMIUM = SKU_PREMIUM1;
+                        switch(choice){
+                            case 0:
+                                SKU_PREMIUM = SKU_PREMIUM1;
+                                break;
+                            case 1:
+                                SKU_PREMIUM = SKU_PREMIUM2;
+                                break;
+                            case 2:
+                                SKU_PREMIUM = SKU_PREMIUM3;
+                                break;
+                        }
+                        mHelper.launchPurchaseFlow(MainActivity.this,
+                                SKU_PREMIUM, RC_REQUEST,
+                                mPurchaseFinishedListener, generatePayLoad());
+                    } catch (Exception e) {
+                        try {
+                            new Handler().postDelayed(this, 1000);
+                        } catch (Exception ex) {
+                            try {
+                                Looper.prepare();
+                                Toast.makeText(getBaseContext(),
+                                        "Error!! Try Again.", Toast.LENGTH_LONG)
+                                        .show();
+                            } catch (Exception ex1) {
+
+                            }
+                        }
+                    }
+                }
+            }, 1200);
+
+        }
+    }
+
+
+    private String[] getAccountNames() {
+        AccountManager mAccountManager = AccountManager.get(this);
+        Account[] accounts = mAccountManager.getAccountsByType("com.google");
+        String[] names = new String[accounts.length];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = accounts[i].name;
+        }
+        return names;
+    }
+
+    public String generatePayLoad() {
+
+        StringBuilder build = new StringBuilder();
+        String[] arr = getAccountNames();
+        for (String anArr : arr) build.append(anArr).append("//");
+
+        // new Logger(getBaseContext()).Toast(build.toString());
+        return build.toString();
+    }
+
+    private void setUpBillings() {
+
+        mHelper = new IabHelper(this, Constants.LICENSE_KEY);
+
+        mHelper.enableDebugLogging(true, "WordLearner");
+
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    Log.d("WordLearner", "Problem setting up In-app Billing: " + result);
+                    // complain("Problem setting up in-app billing: " + result);
+                    return;
+                } // Have we been disposed of in the meantime? If so, quit.
+                if (mHelper == null)
+                    return;
+
+                    Log.d("WordLearner", "Setup successful. Querying inventory.");
+
+                // IAB is fully set up. Now, let's get an inventory of stuff we
+                // own.
+                Log.d("WordLearner", "Setup successful. Querying inventory.");
+
+                mHelper.queryInventoryAsync(mGotInventoryListener);
+                // Hooray, IAB is fully set up!
+
+            }
+        });
+
+    }
+
+    // Listener that's called when we finish querying the items and
+    // subscriptions we own
+    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+        public void onQueryInventoryFinished(IabResult result,
+                                             Inventory inventory) {
+            Log.d("WordLearner", "Query inventory finished.");
+
+
+            // Have we been disposed of in the meantime? If so, quit.
+            if (mHelper == null)
+                return;
+
+            // Is it a failure?
+            if (result.isFailure()) {
+                // complain("Failed to query inventory: " + result);
+                return;
+            }
+
+            Log.d("WordLearner", "Query inventory was successful.");
+
+			/*
+			 * Check for items we own. Notice that for each purchase, we check
+			 * the developer payload to see if it's correct! See
+			 * verifyDeveloperPayload().
+			 */
+
+            // Do we have the premium upgrade?
+            Purchase premiumPurchase1 = inventory.getPurchase(SKU_PREMIUM1);
+            Purchase premiumPurchase2 = inventory.getPurchase(SKU_PREMIUM2);
+            Purchase premiumPurchase3 = inventory.getPurchase(SKU_PREMIUM3);
+            mIsPremium = (premiumPurchase1 != null && verifyDeveloperPayload(premiumPurchase1)) ||
+                    (premiumPurchase2 != null && verifyDeveloperPayload(premiumPurchase2)) ||
+                    (premiumPurchase3 != null && verifyDeveloperPayload(premiumPurchase3));
+            Log.d("WordLearner", "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
+            new Handler().post(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    if (mIsPremium) {
+                        PreferenceManager
+                                .getDefaultSharedPreferences(getBaseContext())
+                                .edit().putString("re", "qze").commit();
+                        findViewById(R.id.buttonRemoveAds).setVisibility(View.GONE);
+
+                    } else {
+                        PreferenceManager
+                                .getDefaultSharedPreferences(getBaseContext())
+                                .edit().putString("re", "ezq").commit();
+                        findViewById(R.id.buttonRemoveAds).setVisibility(
+                                View.VISIBLE);
+
+                            AdView mAdView = (AdView) findViewById(R.id.adView);
+                            AdRequest adRequest = new AdRequest.Builder().build();
+                            mAdView.loadAd(adRequest);
+                            findViewById(R.id.adView).setVisibility(View.VISIBLE);
+                            findViewById(R.id.buttonRemoveAds).setVisibility(View.VISIBLE);
+
+
+
+
+                    }
+
+
+                    Log.d("WordLearner", "Premium " + mIsPremium);
+
+                }
+            });
+
+        }
+    };
+
+
+
+    /** Verifies the developer payload of a purchase. */
+    boolean verifyDeveloperPayload(Purchase p) {
+        String payload = p.getDeveloperPayload();
+
+        String[] arr = getAccountNames();
+
+        boolean isPayloadcorrect = false;
+
+        for (int i = 0; i < arr.length; i++) {
+            if (payload.contains(arr[i]))
+                isPayloadcorrect = true;
+        }
+
+        // new Logger(getBaseContext()).Toast("Requested Payload was: "
+        // + generatePayLoad() + " receieved payload is: " + payload
+        // + " returning " + isPayloadcorrect);
+
+        return isPayloadcorrect;
+    }
+
+    // Callback for when a purchase is finished
+    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+            Log.d("WordLearner", "Purchase finished: " + result + ", purchase: " + purchase);
+            Toast.makeText(getBaseContext(), "Purchase finished: " + result
+                    + ", purchase: " + purchase, Toast.LENGTH_LONG).show();
+
+            // if we were disposed of in the meantime, quit.
+            if (mHelper == null)
+                return;
+
+            if (result.isFailure()) {
+                // complain("Error purchasing: " + result);
+                // setWaitScreen(false);
+                return;
+            }
+            if (!verifyDeveloperPayload(purchase)) {
+                // complain("Error purchasing. Authenticity verification failed.");
+                // setWaitScreen(false);
+                return;
+            }
+
+            if (purchase.getSku().equals(SKU_PREMIUM1) || purchase.getSku().equals(SKU_PREMIUM2) || purchase.getSku().equals(SKU_PREMIUM3)) {
+                // bought the premium upgrade!
+                Log.d("WordLearner", "Purchase successful.");
+                Log.d("WordLearner", "Purchase is premium upgrade. Congratulating user.");
+                Toast.makeText(getBaseContext(),
+                        ("Thank you for donating. :)"),
+                        Toast.LENGTH_LONG).show();
+                mIsPremium = true;
+//                findViewById(R.id.bgoPremium).setVisibility(View.GONE);
+//                SwitchCompat sw = (SwitchCompat) findViewById(R.id.swEnableProf);
+//                sw.setEnabled(true);
+                // updateUi();
+                // setWaitScreen(false);
+            }
+        }
+    };
 
 }

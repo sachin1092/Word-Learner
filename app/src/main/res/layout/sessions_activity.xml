@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_content"
     android:layout_width="match_parent"
-    android:background="@color/window_background"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/window_background">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
@@ -24,24 +24,44 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp">
+
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/lvSessions"
-            android:layout_marginTop="60dp"
-            android:scrollbars="none"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="10dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:layout_marginBottom="10dp" />
+            android:scrollbars="none"
+            android:visibility="gone" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/bNewSession"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_gravity="end|bottom"
-        app:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/ic_plus" />
+        <TextView
+            android:id="@+id/tvNoSessions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:drawablePadding="10dp"
+            android:drawableTop="@drawable/error_cloud"
+            android:gravity="center"
+            android:text="Sorry Captain, No sessions here."
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="20sp" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/bNewSession"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_plus"
+            app:backgroundTint="@color/colorPrimary" />
+    </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

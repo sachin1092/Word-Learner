@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -48,6 +49,7 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
     private AlertDialog dialog;
     private TextToSpeech ttobj;
     WordListFragment todoFragment, masteredFragment;
+    private boolean mIsPremium;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +60,9 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
         setSupportActionBar(toolbar);
 
         final ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         String sessionName = getIntent().getStringExtra(TestWordsActivity.SESSION_NAME);
         currentSession = SessionsUtil.getSession(sessionName);
@@ -73,9 +77,20 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        AdView mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
+
+        mIsPremium = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext())
+                .getString("re", "ezq").equalsIgnoreCase("qze");
+        if(mIsPremium) {
+            findViewById(R.id.adView).setVisibility(View.GONE);
+        }else{
+
+            AdView mAdView = (AdView) findViewById(R.id.adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
+            findViewById(R.id.adView).setVisibility(View.VISIBLE);
+
+        }
 
         ttobj = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
@@ -108,6 +123,8 @@ public class SessionDetailsActivity extends AppCompatActivity implements WordLis
                 return true;
             }
         });
+
+
     }
 
     /**

@@ -15,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
@@ -822,6 +823,15 @@ public class Utils {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+
+    public static void incAppCount(Context mContext){
+        PreferenceManager.getDefaultSharedPreferences(mContext).edit().putInt("AppCount", getAppCount(mContext) + 1).commit();
+    }
+
+    public static int getAppCount(Context mContext) {
+        return PreferenceManager.getDefaultSharedPreferences(mContext).getInt("AppCount", 0);
     }
 
 

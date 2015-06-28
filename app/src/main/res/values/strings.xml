@@ -40,8 +40,18 @@
         <item>1</item>
         <item>2</item>
     </array>
+
     <string name="title_activity_create_session">CreateSessionActivity</string>
     <string name="title_activity_add_words_to_session">Add Words</string>
     <string name="initialising_for_first_use">Initialising for first use</string>
+
+
+    <array name="donate_amount">
+        <item>Donate $2.99</item>
+        <item>Donate $4.99</item>
+        <item>Donate $9.99</item>
+        <!--<item>Donate $14.99</item>-->
+        <!--<item>Donate $24.99</item>-->
+    </array>
 
 </resources>

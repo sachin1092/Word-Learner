@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -17,6 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.AttributeSet;
+import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -29,9 +32,14 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ApiUtils;
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.Target;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.sachinshinde.wordlearner.R;
@@ -46,9 +54,8 @@ import java.util.Collections;
 import java.util.Locale;
 
 
-public class AddWordsActivity extends AppCompatActivity {
+public class AddWordsActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String API_KEY = Constants.API_KEY;
     EditText et;
     View bAdd;
     ListView lvWords;
@@ -85,6 +92,8 @@ public class AddWordsActivity extends AppCompatActivity {
             }
         }
     };
+    private ShowcaseView showcaseView;
+    private boolean mIsPremium;
 
     public void addWord(String wordStr, boolean openDialog) {
         wordStr = wordStr.toLowerCase(Locale.US).trim();
@@ -204,6 +213,23 @@ public class AddWordsActivity extends AppCompatActivity {
         } else {
             findViewById(R.id.tvNoWords).setVisibility(View.GONE);
             findViewById(R.id.wordListContainer).setVisibility(View.VISIBLE);
+
+            showcaseView = new ShowcaseView.Builder(this)
+                    .setTarget(Target.NONE).singleShot(10920)
+                    .setOnClickListener(this)
+                    .setStyle(R.style.CustomShowcaseTheme)
+                    .build();
+            showcaseView.setContentTitle("Words");
+            showcaseView.setContentText("Click on a word to see it's meaning.");
+            showcaseView.setButtonText("Next");
+            
+//            AttributeSet attr = apiUtils.
+            RelativeLayout.LayoutParams mLayoutParams = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            mLayoutParams.setMargins(50, 0, 0, 200);
+            showcaseView.setButtonPosition(mLayoutParams);
         }
 
         sessionList = Utils.loadListFromFile(Utils.SessionFile);
@@ -305,10 +331,20 @@ public class AddWordsActivity extends AppCompatActivity {
             }
         });
 
+        mIsPremium = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext())
+                .getString("re", "ezq").equalsIgnoreCase("qze");
 
-        AdView mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
+        if(mIsPremium) {
+            findViewById(R.id.adView).setVisibility(View.GONE);
+        }else{
+
+            AdView mAdView = (AdView) findViewById(R.id.adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
+            findViewById(R.id.adView).setVisibility(View.VISIBLE);
+
+        }
 
     }
 
@@ -474,5 +510,36 @@ public class AddWordsActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         startActivity(new Intent(AddWordsActivity.this, MainActivity.class));
         super.onBackPressed();
+    }
+
+
+    private int counter = 0;
+    @Override
+    public void onClick(View view) {
+        switch (counter) {
+            case 0:
+                showcaseView.setShowcase(new ViewTarget(et), true);
+                showcaseView.setContentTitle("Search");
+                showcaseView.setContentText("Search words here.");
+                break;
+
+            case 1:
+                showcaseView.setShowcase(Target.NONE, true);
+                showcaseView.setContentTitle("More Options");
+                showcaseView.setContentText("Long press on a word to get more options.");
+                break;
+
+            case 2:
+                showcaseView.setShowcase(new ViewTarget(bAdd), true);
+                showcaseView.setContentTitle("Add Words");
+                showcaseView.setContentText("Click here to Add new words.");
+                showcaseView.setButtonText("GOT IT");
+                break;
+
+            case 3:
+                showcaseView.hide();
+                break;
+        }
+        counter++;
     }
 }

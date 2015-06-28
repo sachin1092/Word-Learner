@@ -58,7 +58,7 @@ public class AddWordsToSessionActivity extends AppCompatActivity {
         }
 
         mList = Utils.loadListFromFile(Utils.WordsFile);
-        //TODO
+
         String sessionName = getIntent().getStringExtra(TestWordsActivity.SESSION_NAME);
         currentSession = SessionsUtil.getSession(sessionName);
 

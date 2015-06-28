@@ -60,6 +60,14 @@ public class SessionsUtil {
         return false;
     }
 
+    public static int getSessionCount(){
+        File mDir = new File(SESSIONS_PATH);
+        if(!mDir.exists())
+            return 0;
+        return mDir.listFiles().length;
+
+    }
+
     public static Session getSession(String sessionName) {
         Session session = new Session();
         try {

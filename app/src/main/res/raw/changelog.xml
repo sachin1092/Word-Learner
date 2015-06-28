@@ -3,7 +3,7 @@
 
     <release
         releasedate="2013-10-18"
-        version="0.1(beta)"
+        version="0.1"
         versioncode="2" >
         <change>
 Initial Release
