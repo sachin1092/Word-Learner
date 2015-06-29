@@ -287,7 +287,7 @@ public class Utils {
                     ((TextView) meaningItemView.findViewById(R.id.tvWordMeaning)).setText(Html.fromHtml(meaning.getMeaning() != null ? meaning.getMeaning() : ""));
 
                     if (meaning.getExamples() != null)
-                        ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText(Html.fromHtml(meaning.getExamples().toString().replace("[", "").replace("]", "")));
+                        ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText(Html.fromHtml(convertListToString(meaning.getExamples(), ".<br/>", true)));
                     else
                         ((TextView) meaningItemView.findViewById(R.id.tvWordSentence)).setText("");
 
@@ -321,6 +321,18 @@ public class Utils {
         }
 
         return null;
+
+    }
+
+    public static String[] romans= {"i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"};
+
+    private static String convertListToString(ArrayList<String> examples, String separator, boolean index) {
+
+        String result = "";
+        for(int i = 0 ; i < examples.size() ; i++){
+            result = result + (index?("<b>" + romans[i] + ".</b> "):"") + examples.get(i).toUpperCase(Locale.US).charAt(0) + examples.get(i).substring(1) + separator;
+        }
+        return result;
 
     }
 
@@ -395,7 +407,7 @@ public class Utils {
         if (linkify) {
             SpannableStringBuilder builder = new SpannableStringBuilder(input);
 
-            Pattern pattern = Pattern.compile("[a-zA-Z]+");
+            Pattern pattern = Pattern.compile("[a-zA-Zé]+");
             Matcher matcher = pattern.matcher(input);
             while (matcher.find()) {
                 int start = matcher.start();
