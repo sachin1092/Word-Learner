@@ -2,11 +2,32 @@
 <changelog>
 
     <release
-        releasedate="2013-10-18"
-        version="0.1"
+        releasedate="2015-06-29"
+        version="1.0"
         versioncode="2" >
         <change>
-Initial Release
+Initial Release.
+
+
+        </change>
+    </release>
+
+    <release
+        releasedate="2015-06-30"
+        version="1.1"
+        versioncode="3" >
+        <change>
+Added line number to example sentences.
+
+
+        </change>
+    </release>
+    <release
+        releasedate="2015-07-05"
+        version="1.2"
+        versioncode="4" >
+        <change>
+Added option to clear all words and sessions.
 
 
         </change>

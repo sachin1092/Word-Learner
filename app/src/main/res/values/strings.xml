@@ -44,6 +44,9 @@
     <string name="title_activity_create_session">CreateSessionActivity</string>
     <string name="title_activity_add_words_to_session">Add Words</string>
     <string name="initialising_for_first_use">Initialising for first use</string>
+    <string name="donation_l1">Donation is optional. Everything works the same with or without donation. But if you want to say thank you to the app developer you can donate some cash.\n\nAs a thank you we will remove the ads.</string>
+    <string name="donation_l2">You will be sent to Google Play to view the final amount in your local currency and complete the process.</string>
+    <string name="donate_button_str">if you like this app, please consider\n<a href="#">making some donation</a>.\nThank you</string>
 
 
     <array name="donate_amount">

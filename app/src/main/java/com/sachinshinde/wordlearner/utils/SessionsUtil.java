@@ -68,6 +68,13 @@ public class SessionsUtil {
 
     }
 
+    public static String[] getSessionNames(){
+        File mDir = new File(SESSIONS_PATH);
+        if(!mDir.exists())
+            return new String[0];
+        return mDir.list();
+    }
+
     public static Session getSession(String sessionName) {
         Session session = new Session();
         try {
@@ -216,6 +223,13 @@ public class SessionsUtil {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public static void deleteAllSessions(){
+        String[] sessions = getSessionNames();
+        for(int i = 0 ; i < sessions.length ; i++){
+            deleteSession(sessions[i]);
         }
     }
 

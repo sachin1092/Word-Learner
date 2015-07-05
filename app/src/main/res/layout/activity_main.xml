@@ -199,18 +199,20 @@
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
-                <Button
+                <TextView
                     android:id="@+id/buttonRemoveAds"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2.5dp"
                     android:layout_marginLeft="25dp"
+                    android:textColorLink="@color/colorPrimary"
                     android:layout_marginRight="25dp"
                     android:layout_marginTop="2.5dp"
-                    android:background="@drawable/item_background"
-                    android:text="REMOVE ADS BY DONATION"
-                    android:textColor="@color/colorTernaryText"
-                    android:textSize="12sp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/donate_button_str"
+                    android:textColor="@color/colorPrimaryText"
+                    android:textSize="15sp"
                     android:textStyle="bold" />
 
             </LinearLayout>

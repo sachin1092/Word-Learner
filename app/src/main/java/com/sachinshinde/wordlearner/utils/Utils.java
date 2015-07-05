@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sachinshinde.wordlearner.R;
+import com.sachinshinde.wordlearner.activities.MainActivity;
 import com.sachinshinde.wordlearner.module.Meaning;
 import com.sachinshinde.wordlearner.module.SubWords;
 import com.sachinshinde.wordlearner.module.Word;
@@ -516,6 +517,22 @@ public class Utils {
             file.delete();
             System.out.println("File is deleted : " + file.getAbsolutePath());
         }
+    }
+
+    public static void deleteEverything(Context mContext) {
+        PreferenceManager.getDefaultSharedPreferences(mContext).edit().clear().commit();
+        SessionsUtil.deleteAllSessions();
+        File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
+        if (!mDir.exists()) {
+            mDir.mkdirs();
+        }
+        File mFile = new File(mDir.getPath() + "/" + WordsFile);
+        try {
+            deleteFile(mFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static class ClickableURLSpan extends URLSpan {

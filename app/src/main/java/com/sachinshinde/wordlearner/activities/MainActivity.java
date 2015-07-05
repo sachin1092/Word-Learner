@@ -40,6 +40,7 @@ import android.view.animation.RotateAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -434,15 +435,34 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View view) {
                 AlertDialog.Builder mDonateBuilder = new AlertDialog.Builder(MainActivity.this);
-                mDonateBuilder.setTitle("Remove Ads by Donation");
-                mDonateBuilder.setAdapter(new ArrayAdapter<String>(getBaseContext(),
-                        android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.donate_amount)), new DialogInterface.OnClickListener() {
+                mDonateBuilder.setTitle("Donation");
+                final View mView = LayoutInflater.from(MainActivity.this).inflate(R.layout.donate_dialog, null);
+                mDonateBuilder.setView(mView);
+//                mDonateBuilder.setAdapter(new ArrayAdapter<String>(getBaseContext(),
+//                        android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.donate_amount)), new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int i) {
+//                        onUpgradeAppButtonClicked(i);
+//                    }
+//                });
+                mDonateBuilder.setPositiveButton("DONATE", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        onUpgradeAppButtonClicked(i);
+                        int choice = 1;
+                        switch(((RadioGroup)mView.findViewById(R.id.rgDonation)).getCheckedRadioButtonId()){
+                            case R.id.rgDonation1:
+                                choice = 0;
+                                break;
+                            case R.id.rgDonation2:
+                                choice = 1;
+                                break;
+                            case R.id.rgDonation3:
+                                choice = 2;
+                                break;
+                        }
+                        onUpgradeAppButtonClicked(choice);
                     }
                 });
-
                 mDonateBuilder.setNegativeButton("CANCEL", null);
                 mDonateBuilder.show();
             }
@@ -463,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements
 
         if (Utils.getAppCount(getBaseContext()) == PreferenceManager
                 .getDefaultSharedPreferences(getBaseContext()).getInt("showAt",
-                        20)) {
+                        10)) {
 
             showRateDialog();
         }
@@ -646,10 +666,29 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.action_share:
                 startActivity(createShareIntent());
                 return true;
-//            case R.id.action_gopro:
-//                return true;
+            case R.id.action_reset:
+                showResetDialog();
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showResetDialog() {
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        mBuilder.setTitle("Warning");
+        mBuilder.setMessage("This will delete all Words and Sessions.\n\nAre you sure you want to reset everything?");
+        mBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Utils.deleteEverything(MainActivity.this);
+                finish();
+                startActivity(new Intent(MainActivity.this, MainActivity.class));
+            }
+        });
+
+        mBuilder.setNegativeButton("CANCEL", null);
+
+        mBuilder.show();
     }
 
     private Intent createShareIntent() {
@@ -827,7 +866,7 @@ public class MainActivity extends AppCompatActivity implements
                 MainActivity.this);
         builder.setTitle("Rate");
         builder.setIcon(R.drawable.word_learner);
-        builder.setMessage("Rate and support us.");
+        builder.setMessage("Rate and support us.\nGreat reviews keep us going. :)");
         builder.setPositiveButton("Rate Now", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
