@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="18dp">
+
+    <TextView
+        android:textColor="@color/colorPrimaryText"
+        android:layout_width="match_parent"
+        android:textSize="15sp"
+        android:layout_height="wrap_content"
+        android:text="@string/donation_l1"/>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:padding="10dp"
+        android:id="@+id/rgDonation"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/rgDonation1"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="15sp"
+            android:text="$2.99"/>
+
+        <RadioButton
+            android:id="@+id/rgDonation2"
+            android:layout_width="match_parent"
+            android:checked="true"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="15sp"
+            android:text="$4.99"/>
+
+        <RadioButton
+            android:id="@+id/rgDonation3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="15sp"
+            android:text="$9.99"/>
+
+    </RadioGroup>
+
+    <TextView
+        android:textColor="@color/colorPrimaryText"
+        android:layout_width="match_parent"
+        android:textSize="15sp"
+        android:layout_height="wrap_content"
+        android:text="@string/donation_l2"/>
+
+</LinearLayout>
