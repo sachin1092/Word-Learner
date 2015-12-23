@@ -336,6 +336,7 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onClick(View view) {
                         ArrayList<String> words = Utils.loadListFromFile(Utils.WordsFile);
+                        if(words == null) words = new ArrayList<String>();
                         words.addAll(new Words_1454().import1454);
                         Utils.writeListToFile(words, Utils.WordsFile);
                         Toast.makeText(MainActivity.this, "Words Added Successfully", Toast.LENGTH_SHORT).show();
@@ -355,6 +356,7 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onClick(View view) {
                         ArrayList<String> words = Utils.loadListFromFile(Utils.WordsFile);
+                        if(words == null) words = new ArrayList<String>();
                         words.addAll(new Words_3817().import3817);
                         Utils.writeListToFile(words, Utils.WordsFile);
                         Toast.makeText(MainActivity.this, "Words Added Successfully", Toast.LENGTH_SHORT).show();
@@ -374,6 +376,7 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onClick(View view) {
                         ArrayList<String> words = Utils.loadListFromFile(Utils.WordsFile);
+                        if(words == null) words = new ArrayList<String>();
                         words.addAll(new Words_4178().import4178);
                         Utils.writeListToFile(words, Utils.WordsFile);
                         Toast.makeText(MainActivity.this, "Words Added Successfully", Toast.LENGTH_SHORT).show();

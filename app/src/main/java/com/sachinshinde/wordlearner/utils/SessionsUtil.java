@@ -64,6 +64,7 @@ public class SessionsUtil {
         File mDir = new File(SESSIONS_PATH);
         if(!mDir.exists())
             return 0;
+        if(mDir.listFiles() == null) return 0;
         return mDir.listFiles().length;
 
     }

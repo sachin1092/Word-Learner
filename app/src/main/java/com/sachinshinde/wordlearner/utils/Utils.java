@@ -34,7 +34,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sachinshinde.wordlearner.R;
-import com.sachinshinde.wordlearner.activities.MainActivity;
 import com.sachinshinde.wordlearner.module.Meaning;
 import com.sachinshinde.wordlearner.module.SubWords;
 import com.sachinshinde.wordlearner.module.Word;
@@ -111,7 +110,7 @@ public class Utils {
 
     public static ArrayList<String> loadListFromFile(String FileName) {
         if (null == FileName)
-            return null;
+            return new ArrayList<>();
         File mDir = new File(Environment.getExternalStorageDirectory().getPath() + "/WordLearner");
         if (!mDir.exists()) {
             mDir.mkdirs();
@@ -125,11 +124,11 @@ public class Utils {
                 list = (ArrayList<String>) ois.readObject();
                 fis.close();
             } else {
-                return null;
+                return new ArrayList<>();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
         Set<String> set = new TreeSet<String>();
         set.addAll(list);

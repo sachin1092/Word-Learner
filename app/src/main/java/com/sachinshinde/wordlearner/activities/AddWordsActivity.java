@@ -206,6 +206,7 @@ public class AddWordsActivity extends AppCompatActivity implements View.OnClickL
 
         words = Utils.loadListFromFile(Utils.WordsFile);
 
+        if(words == null) words = new ArrayList<>();
 
         if(words.size() == 0){
             findViewById(R.id.tvNoWords).setVisibility(View.VISIBLE);
