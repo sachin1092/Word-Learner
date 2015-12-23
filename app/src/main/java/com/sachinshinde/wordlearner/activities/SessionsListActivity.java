@@ -84,7 +84,7 @@ public class SessionsListActivity extends AppCompatActivity implements View.OnCl
             }
         });
 
-        showcaseView = new ShowcaseView.Builder(this)
+        showcaseView = new ShowcaseView.Builder(this).withMaterialShowcase()
                 .setTarget(Target.NONE).singleShot(10921)
                 .setOnClickListener(this)
                 .setStyle(R.style.CustomShowcaseTheme)
@@ -101,7 +101,9 @@ public class SessionsListActivity extends AppCompatActivity implements View.OnCl
                 RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        mLayoutParams.setMargins(50, 0, 0, 200);
+//        mLayoutParams.setMargins(50, 0, 0, 200);
+        int margin = ((Number) (getResources().getDisplayMetrics().density * 12)).intValue();
+        mLayoutParams.setMargins(margin, margin, margin, margin);
         showcaseView.setButtonPosition(mLayoutParams);
 
     }
@@ -173,7 +175,7 @@ public class SessionsListActivity extends AppCompatActivity implements View.OnCl
     public void onClick(View view) {
         switch (counter) {
             case 0:
-                showcaseView.setShowcase(new ViewTarget(findViewById(R.id.bNewSession)), true);
+                showcaseView.setShowcase(new ViewTarget(findViewById(R.id.bNewSession)), false);
                 showcaseView.setContentTitle("Create Sessions");
                 showcaseView.setContentText("Click here to Create new Session.");
                 showcaseView.setButtonText("GOT IT");

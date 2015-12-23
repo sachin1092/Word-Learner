@@ -215,7 +215,7 @@ public class AddWordsActivity extends AppCompatActivity implements View.OnClickL
             findViewById(R.id.tvNoWords).setVisibility(View.GONE);
             findViewById(R.id.wordListContainer).setVisibility(View.VISIBLE);
 
-            showcaseView = new ShowcaseView.Builder(this)
+            showcaseView = new ShowcaseView.Builder(this).withMaterialShowcase()
                     .setTarget(Target.NONE).singleShot(10920)
                     .setOnClickListener(this)
                     .setStyle(R.style.CustomShowcaseTheme)
@@ -229,7 +229,9 @@ public class AddWordsActivity extends AppCompatActivity implements View.OnClickL
                     RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
             mLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            mLayoutParams.setMargins(50, 0, 0, 200);
+//            mLayoutParams.setMargins(50, 0, 0, 200);
+            int margin = ((Number) (getResources().getDisplayMetrics().density * 12)).intValue();
+            mLayoutParams.setMargins(margin, margin, margin, margin);
             showcaseView.setButtonPosition(mLayoutParams);
         }
 
@@ -519,19 +521,31 @@ public class AddWordsActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View view) {
         switch (counter) {
             case 0:
-                showcaseView.setShowcase(new ViewTarget(et), true);
+//                try {
+//                    showcaseView.setShowcase(new ViewTarget(et), true);
+//                }catch (Exception ex){
+                    showcaseView.setShowcase(new ViewTarget(et), false);
+//                }
                 showcaseView.setContentTitle("Search");
                 showcaseView.setContentText("Search words here.");
                 break;
 
             case 1:
-                showcaseView.setShowcase(Target.NONE, true);
+//                try {
+//                    showcaseView.setShowcase(Target.NONE, true);
+//                }catch (Exception ex){
+                    showcaseView.setShowcase(Target.NONE, false);
+//                }
                 showcaseView.setContentTitle("More Options");
                 showcaseView.setContentText("Long press on a word to get more options.");
                 break;
 
             case 2:
-                showcaseView.setShowcase(new ViewTarget(bAdd), true);
+//                try {
+//                    showcaseView.setShowcase(new ViewTarget(bAdd), true);
+//                }catch (Exception ex) {
+                    showcaseView.setShowcase(new ViewTarget(bAdd), false);
+//                }
                 showcaseView.setContentTitle("Add Words");
                 showcaseView.setContentText("Click here to Add new words.");
                 showcaseView.setButtonText("GOT IT");
