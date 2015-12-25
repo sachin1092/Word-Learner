@@ -32,5 +32,16 @@ Added option to clear all words and sessions.
 
         </change>
     </release>
+ <release
+        releasedate="2015-12-23"
+        version="1.3"
+        versioncode="5" >
+        <change>
+Fixed crash in marshmallow
+            Implemented the new permissions model for marshmallow
+
+
+        </change>
+    </release>
 
 </changelog>

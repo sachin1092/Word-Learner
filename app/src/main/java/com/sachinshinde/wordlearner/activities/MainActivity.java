@@ -1,5 +1,6 @@
 package com.sachinshinde.wordlearner.activities;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.animation.Animator;
@@ -11,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -20,6 +22,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -82,10 +86,20 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements
         DirectoryChooserFragment.OnFragmentInteractionListener {
 
+    //Billing related code premium upgrade (non-consumable) and gas
+    // (consumable)
+    static final String SKU_PREMIUM1 = "word_learner_2.99";
+    static final String SKU_PREMIUM2 = "word_learner_4.99";
+    static final String SKU_PREMIUM3 = "word_learner_9.99";
+    // (arbitrary) request code for the purchase flcow
+    static final int RC_REQUEST = 100011;
+    static final int RC_REQUEST_299 = 100012;
+    static final int RC_REQUEST_499 = 100013;
     private static final int FILE_SELECT_CODE = 0;
     private static final String FIRST_TIME_HELP = "first_time";
     View mExportDialogView;
     View importDialogView;
+    boolean mIsPremium = false;
     private DirectoryChooserFragment mDialog;
     private android.support.v7.app.AlertDialog mImportDialog;
     BroadcastReceiver mProgressReceivers = new BroadcastReceiver() {
@@ -105,7 +119,116 @@ public class MainActivity extends AppCompatActivity implements
     private android.support.v7.app.AlertDialog mExportDialog;
     private boolean alreadyOpened = false;
     private boolean firsttime = false;
+    private IabHelper mHelper;
+    // Listener that's called when we finish querying the items and
+    // subscriptions we own
+    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+        public void onQueryInventoryFinished(IabResult result,
+                                             Inventory inventory) {
+            Log.d("WordLearner", "Query inventory finished.");
 
+
+            // Have we been disposed of in the meantime? If so, quit.
+            if (mHelper == null)
+                return;
+
+            // Is it a failure?
+            if (result.isFailure()) {
+                // complain("Failed to query inventory: " + result);
+                return;
+            }
+
+            Log.d("WordLearner", "Query inventory was successful.");
+
+			/*
+			 * Check for items we own. Notice that for each purchase, we check
+			 * the developer payload to see if it's correct! See
+			 * verifyDeveloperPayload().
+			 */
+
+            // Do we have the premium upgrade?
+            Purchase premiumPurchase1 = inventory.getPurchase(SKU_PREMIUM1);
+            Purchase premiumPurchase2 = inventory.getPurchase(SKU_PREMIUM2);
+            Purchase premiumPurchase3 = inventory.getPurchase(SKU_PREMIUM3);
+            mIsPremium = (premiumPurchase1 != null && verifyDeveloperPayload(premiumPurchase1)) ||
+                    (premiumPurchase2 != null && verifyDeveloperPayload(premiumPurchase2)) ||
+                    (premiumPurchase3 != null && verifyDeveloperPayload(premiumPurchase3));
+            Log.d("WordLearner", "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
+            new Handler().post(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    if (mIsPremium) {
+                        PreferenceManager
+                                .getDefaultSharedPreferences(getBaseContext())
+                                .edit().putString("re", "qze").commit();
+                        findViewById(R.id.buttonRemoveAds).setVisibility(View.GONE);
+
+                    } else {
+                        PreferenceManager
+                                .getDefaultSharedPreferences(getBaseContext())
+                                .edit().putString("re", "ezq").commit();
+                        findViewById(R.id.buttonRemoveAds).setVisibility(
+                                View.VISIBLE);
+
+                            AdView mAdView = (AdView) findViewById(R.id.adView);
+                            AdRequest adRequest = new AdRequest.Builder().build();
+                            mAdView.loadAd(adRequest);
+                            findViewById(R.id.adView).setVisibility(View.VISIBLE);
+                            findViewById(R.id.buttonRemoveAds).setVisibility(View.VISIBLE);
+
+
+
+
+                    }
+
+
+                    Log.d("WordLearner", "Premium " + mIsPremium);
+
+                }
+            });
+
+        }
+    };
+    // Callback for when a purchase is finished
+    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+            Log.d("WordLearner", "Purchase finished: " + result + ", purchase: " + purchase);
+            Toast.makeText(getBaseContext(), "Purchase finished: " + result
+                    + ", purchase: " + purchase, Toast.LENGTH_LONG).show();
+
+            // if we were disposed of in the meantime, quit.
+            if (mHelper == null)
+                return;
+
+            if (result.isFailure()) {
+                // complain("Error purchasing: " + result);
+                // setWaitScreen(false);
+                return;
+            }
+            if (!verifyDeveloperPayload(purchase)) {
+                // complain("Error purchasing. Authenticity verification failed.");
+                // setWaitScreen(false);
+                return;
+            }
+
+            if (purchase.getSku().equals(SKU_PREMIUM1) || purchase.getSku().equals(SKU_PREMIUM2) || purchase.getSku().equals(SKU_PREMIUM3)) {
+                // bought the premium upgrade!
+                Log.d("WordLearner", "Purchase successful.");
+                Log.d("WordLearner", "Purchase is premium upgrade. Congratulating user.");
+                Toast.makeText(getBaseContext(),
+                        ("Thank you for donating. :)"),
+                        Toast.LENGTH_LONG).show();
+                mIsPremium = true;
+//                findViewById(R.id.bgoPremium).setVisibility(View.GONE);
+//                SwitchCompat sw = (SwitchCompat) findViewById(R.id.swEnableProf);
+//                sw.setEnabled(true);
+                // updateUi();
+                // setWaitScreen(false);
+            }
+        }
+    };
 
     public static String getPath(Context context, Uri uri) throws URISyntaxException {
         if ("content".equalsIgnoreCase(uri.getScheme())) {
@@ -127,72 +250,6 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         return null;
-    }
-
-    public class OneTimeThing extends AsyncTask<Void, Void, Void> {
-
-
-        private Context mContext;
-
-        public OneTimeThing(Context mContext) {
-            this.mContext = mContext;
-        }
-
-        private Animation createHintSwitchAnimation() {
-            Animation animation = new RotateAnimation(0, 360,
-                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
-                    0.5f);
-            animation.setStartOffset(0);
-            animation.setDuration(1300);
-            animation.setRepeatCount(Animation.INFINITE);
-            animation.setRepeatMode(Animation.RESTART);
-            animation.setInterpolator(new DecelerateInterpolator());
-            animation.setFillAfter(true);
-
-            return animation;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            findViewById(R.id.rlsplash).setVisibility(View.VISIBLE);
-            findViewById(R.id.containerMain).setVisibility(View.GONE);
-            ((ImageView) findViewById(R.id.ivsplashedit))
-                    .setImageBitmap(Utils.loader(mContext));
-            (findViewById(R.id.ivsplashedit))
-                    .startAnimation(createHintSwitchAnimation());
-        }
-
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            try {
-                Utils.unZipIt(getAssets().open("word_definitions.zip"), Utils.WORDS_PATH);
-                Utils.unZipIt(Utils.WORDS_PATH + File.separator + "Words.zip", Utils.WORDS_PATH + File.separator + "Words");
-                File mFile = new File(Utils.WORDS_PATH + File.separator + "Words.zip");
-                mFile.delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            findViewById(R.id.rlsplash).setVisibility(View.GONE);
-            findViewById(R.id.containerMain).setVisibility(View.VISIBLE);
-            PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putBoolean(
-                    FIRST_TIME_HELP, false).commit();
-
-            initialise();
-
-            findViewById(R.id.buttonImport).performClick();
-            Toast.makeText(MainActivity.this, "Please import a word list to continue.", Toast.LENGTH_LONG).show();
-
-        }
-
     }
 
     public void initialise() {
@@ -476,6 +533,13 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        checkIfIHavePermission();
+
+    }
+
+    private void start(){
+
         if (PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(
                 FIRST_TIME_HELP, true)) {
             new OneTimeThing(getBaseContext()).execute();
@@ -496,7 +560,81 @@ public class MainActivity extends AppCompatActivity implements
             setUpBillings();
         } catch (Exception ex) {
         }
+    }
 
+    private final int PERMISSION_CONSTANT = 10;
+
+    private void checkIfIHavePermission() {
+        Activity activity = MainActivity.this;
+        int permissionCheck = ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Toast.makeText(MainActivity.this, "before if", Toast.LENGTH_SHORT).show();
+        Log.d("The Weather App", "before if");
+        // Here, thisActivity is the current activity
+        if (permissionCheck
+                != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(MainActivity.this, "inside if permission not granted", Toast.LENGTH_SHORT).show();
+            Log.d("The Weather App", "inside if permission not granted");
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(MainActivity.this, "inside if show", Toast.LENGTH_SHORT).show();
+                Log.d("The Weather App", "inside if show");
+//                // Show an expanation to the user *asynchronously* -- don't block
+//                // this thread waiting for the user's response! After the user
+//                // sees the explanation, try again to request the permission.
+//
+//                AlertDialog.Builder mBuilder = new AlertDialog.Builder(activity);
+//                mBuilder.setTitle("");
+//                mBuilder.setMessage("");
+//
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PERMISSION_CONSTANT);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+//            } else {
+                Toast.makeText(MainActivity.this, "inside else of show", Toast.LENGTH_SHORT).show();
+                Log.d("The Weather App", "inside else of show");
+            }
+        } else {
+            Toast.makeText(MainActivity.this, "inside else", Toast.LENGTH_SHORT).show();
+            Log.d("The Weather App", "inside else");
+            start();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_CONSTANT: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    start();
+
+                } else {
+
+                    Toast.makeText(MainActivity.this, "Application can't work without this permission. Exiting.", Toast.LENGTH_LONG).show();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 
     @Override
@@ -622,7 +760,6 @@ public class MainActivity extends AppCompatActivity implements
         return builder;
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -718,6 +855,236 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onCancelChooser() {
         mDialog.dismiss();
+    }
+
+    private void showRateDialog() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(
+                MainActivity.this);
+        builder.setTitle("Rate");
+        builder.setIcon(R.drawable.word_learner);
+        builder.setMessage("Rate and support us.\nGreat reviews keep us going. :)");
+        builder.setPositiveButton("Rate Now", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                    Utils.launchMarket(getBaseContext(), getPackageName());
+
+            }
+        });
+
+        builder.setNegativeButton("Later", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                SharedPreferences getPrefs = PreferenceManager
+                        .getDefaultSharedPreferences(getBaseContext());
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
+                        .putInt("showAt", 2 * getPrefs.getInt("showAt", 10))
+                        .commit();
+            }
+        });
+        builder.show();
+
+    }
+
+    // SKUs for our products: the
+    // User clicked the "Upgrade to Premium" button.
+    public void onUpgradeAppButtonClicked(final int choice) {
+        Log.d("WordLearner", "Upgrade button clicked; launching purchase flow for upgrade.");
+        String SKU_PREMIUM = SKU_PREMIUM1;
+        switch(choice){
+            case 0:
+                SKU_PREMIUM = SKU_PREMIUM1;
+                break;
+            case 1:
+                SKU_PREMIUM = SKU_PREMIUM2;
+                break;
+            case 2:
+                SKU_PREMIUM = SKU_PREMIUM3;
+                break;
+        }
+
+        try {
+
+            mHelper.launchPurchaseFlow(MainActivity.this, SKU_PREMIUM,
+                    RC_REQUEST, mPurchaseFinishedListener, generatePayLoad());
+        } catch (Exception ex) {
+
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        String SKU_PREMIUM = SKU_PREMIUM1;
+                        switch(choice){
+                            case 0:
+                                SKU_PREMIUM = SKU_PREMIUM1;
+                                break;
+                            case 1:
+                                SKU_PREMIUM = SKU_PREMIUM2;
+                                break;
+                            case 2:
+                                SKU_PREMIUM = SKU_PREMIUM3;
+                                break;
+                        }
+                        mHelper.launchPurchaseFlow(MainActivity.this,
+                                SKU_PREMIUM, RC_REQUEST,
+                                mPurchaseFinishedListener, generatePayLoad());
+                    } catch (Exception e) {
+                        try {
+                            new Handler().postDelayed(this, 1000);
+                        } catch (Exception ex) {
+                            try {
+                                Looper.prepare();
+                                Toast.makeText(getBaseContext(),
+                                        "Error!! Try Again.", Toast.LENGTH_LONG)
+                                        .show();
+                            } catch (Exception ex1) {
+
+                            }
+                        }
+                    }
+                }
+            }, 1200);
+
+        }
+    }
+
+
+    private String[] getAccountNames() {
+        AccountManager mAccountManager = AccountManager.get(this);
+        Account[] accounts = mAccountManager.getAccountsByType("com.google");
+        String[] names = new String[accounts.length];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = accounts[i].name;
+        }
+        return names;
+    }
+
+    public String generatePayLoad() {
+
+        StringBuilder build = new StringBuilder();
+        String[] arr = getAccountNames();
+        for (String anArr : arr) build.append(anArr).append("//");
+
+        // new Logger(getBaseContext()).Toast(build.toString());
+        return build.toString();
+    }
+
+    private void setUpBillings() {
+
+        mHelper = new IabHelper(this, Constants.LICENSE_KEY);
+
+        mHelper.enableDebugLogging(true, "WordLearner");
+
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    Log.d("WordLearner", "Problem setting up In-app Billing: " + result);
+                    // complain("Problem setting up in-app billing: " + result);
+                    return;
+                } // Have we been disposed of in the meantime? If so, quit.
+                if (mHelper == null)
+                    return;
+
+                    Log.d("WordLearner", "Setup successful. Querying inventory.");
+
+                // IAB is fully set up. Now, let's get an inventory of stuff we
+                // own.
+                Log.d("WordLearner", "Setup successful. Querying inventory.");
+
+                mHelper.queryInventoryAsync(mGotInventoryListener);
+                // Hooray, IAB is fully set up!
+
+            }
+        });
+
+    }
+
+    /** Verifies the developer payload of a purchase. */
+    boolean verifyDeveloperPayload(Purchase p) {
+        String payload = p.getDeveloperPayload();
+
+        String[] arr = getAccountNames();
+
+        boolean isPayloadcorrect = false;
+
+        for (int i = 0; i < arr.length; i++) {
+            if (payload.contains(arr[i]))
+                isPayloadcorrect = true;
+        }
+
+        // new Logger(getBaseContext()).Toast("Requested Payload was: "
+        // + generatePayLoad() + " receieved payload is: " + payload
+        // + " returning " + isPayloadcorrect);
+
+        return isPayloadcorrect;
+    }
+
+    public class OneTimeThing extends AsyncTask<Void, Void, Void> {
+
+
+        private Context mContext;
+
+        public OneTimeThing(Context mContext) {
+            this.mContext = mContext;
+        }
+
+        private Animation createHintSwitchAnimation() {
+            Animation animation = new RotateAnimation(0, 360,
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+                    0.5f);
+            animation.setStartOffset(0);
+            animation.setDuration(1300);
+            animation.setRepeatCount(Animation.INFINITE);
+            animation.setRepeatMode(Animation.RESTART);
+            animation.setInterpolator(new DecelerateInterpolator());
+            animation.setFillAfter(true);
+
+            return animation;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            findViewById(R.id.rlsplash).setVisibility(View.VISIBLE);
+            findViewById(R.id.containerMain).setVisibility(View.GONE);
+            ((ImageView) findViewById(R.id.ivsplashedit))
+                    .setImageBitmap(Utils.loader(mContext));
+            (findViewById(R.id.ivsplashedit))
+                    .startAnimation(createHintSwitchAnimation());
+        }
+
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                Utils.unZipIt(getAssets().open("word_definitions.zip"), Utils.WORDS_PATH);
+                Utils.unZipIt(Utils.WORDS_PATH + File.separator + "Words.zip", Utils.WORDS_PATH + File.separator + "Words");
+                File mFile = new File(Utils.WORDS_PATH + File.separator + "Words.zip");
+                mFile.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            findViewById(R.id.rlsplash).setVisibility(View.GONE);
+            findViewById(R.id.containerMain).setVisibility(View.VISIBLE);
+            PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit().putBoolean(
+                    FIRST_TIME_HELP, false).commit();
+
+            initialise();
+
+            findViewById(R.id.buttonImport).performClick();
+            Toast.makeText(MainActivity.this, "Please import a word list to continue.", Toast.LENGTH_LONG).show();
+
+        }
+
     }
 
     public class ExportWords extends AsyncTask<String, Void, String> {
@@ -862,297 +1229,5 @@ public class MainActivity extends AppCompatActivity implements
             return null;
         }
     }
-
-
-    private void showRateDialog() {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(
-                MainActivity.this);
-        builder.setTitle("Rate");
-        builder.setIcon(R.drawable.word_learner);
-        builder.setMessage("Rate and support us.\nGreat reviews keep us going. :)");
-        builder.setPositiveButton("Rate Now", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-                    Utils.launchMarket(getBaseContext(), getPackageName());
-
-            }
-        });
-
-        builder.setNegativeButton("Later", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                SharedPreferences getPrefs = PreferenceManager
-                        .getDefaultSharedPreferences(getBaseContext());
-                PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
-                        .putInt("showAt", 2 * getPrefs.getInt("showAt", 10))
-                        .commit();
-            }
-        });
-        builder.show();
-
-    }
-
-    //Billing related code premium upgrade (non-consumable) and gas
-    // (consumable)
-    static final String SKU_PREMIUM1 = "word_learner_2.99";
-    static final String SKU_PREMIUM2 = "word_learner_4.99";
-    static final String SKU_PREMIUM3 = "word_learner_9.99";
-
-    // (arbitrary) request code for the purchase flcow
-    static final int RC_REQUEST = 100011;
-    static final int RC_REQUEST_299 = 100012;
-    static final int RC_REQUEST_499 = 100013;
-
-    private IabHelper mHelper;
-
-    boolean mIsPremium = false;
-    // SKUs for our products: the
-    // User clicked the "Upgrade to Premium" button.
-    public void onUpgradeAppButtonClicked(final int choice) {
-        Log.d("WordLearner", "Upgrade button clicked; launching purchase flow for upgrade.");
-        String SKU_PREMIUM = SKU_PREMIUM1;
-        switch(choice){
-            case 0:
-                SKU_PREMIUM = SKU_PREMIUM1;
-                break;
-            case 1:
-                SKU_PREMIUM = SKU_PREMIUM2;
-                break;
-            case 2:
-                SKU_PREMIUM = SKU_PREMIUM3;
-                break;
-        }
-
-        try {
-
-            mHelper.launchPurchaseFlow(MainActivity.this, SKU_PREMIUM,
-                    RC_REQUEST, mPurchaseFinishedListener, generatePayLoad());
-        } catch (Exception ex) {
-
-            new Handler().postDelayed(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        String SKU_PREMIUM = SKU_PREMIUM1;
-                        switch(choice){
-                            case 0:
-                                SKU_PREMIUM = SKU_PREMIUM1;
-                                break;
-                            case 1:
-                                SKU_PREMIUM = SKU_PREMIUM2;
-                                break;
-                            case 2:
-                                SKU_PREMIUM = SKU_PREMIUM3;
-                                break;
-                        }
-                        mHelper.launchPurchaseFlow(MainActivity.this,
-                                SKU_PREMIUM, RC_REQUEST,
-                                mPurchaseFinishedListener, generatePayLoad());
-                    } catch (Exception e) {
-                        try {
-                            new Handler().postDelayed(this, 1000);
-                        } catch (Exception ex) {
-                            try {
-                                Looper.prepare();
-                                Toast.makeText(getBaseContext(),
-                                        "Error!! Try Again.", Toast.LENGTH_LONG)
-                                        .show();
-                            } catch (Exception ex1) {
-
-                            }
-                        }
-                    }
-                }
-            }, 1200);
-
-        }
-    }
-
-
-    private String[] getAccountNames() {
-        AccountManager mAccountManager = AccountManager.get(this);
-        Account[] accounts = mAccountManager.getAccountsByType("com.google");
-        String[] names = new String[accounts.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = accounts[i].name;
-        }
-        return names;
-    }
-
-    public String generatePayLoad() {
-
-        StringBuilder build = new StringBuilder();
-        String[] arr = getAccountNames();
-        for (String anArr : arr) build.append(anArr).append("//");
-
-        // new Logger(getBaseContext()).Toast(build.toString());
-        return build.toString();
-    }
-
-    private void setUpBillings() {
-
-        mHelper = new IabHelper(this, Constants.LICENSE_KEY);
-
-        mHelper.enableDebugLogging(true, "WordLearner");
-
-        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            public void onIabSetupFinished(IabResult result) {
-                if (!result.isSuccess()) {
-                    // Oh noes, there was a problem.
-                    Log.d("WordLearner", "Problem setting up In-app Billing: " + result);
-                    // complain("Problem setting up in-app billing: " + result);
-                    return;
-                } // Have we been disposed of in the meantime? If so, quit.
-                if (mHelper == null)
-                    return;
-
-                    Log.d("WordLearner", "Setup successful. Querying inventory.");
-
-                // IAB is fully set up. Now, let's get an inventory of stuff we
-                // own.
-                Log.d("WordLearner", "Setup successful. Querying inventory.");
-
-                mHelper.queryInventoryAsync(mGotInventoryListener);
-                // Hooray, IAB is fully set up!
-
-            }
-        });
-
-    }
-
-    // Listener that's called when we finish querying the items and
-    // subscriptions we own
-    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
-        public void onQueryInventoryFinished(IabResult result,
-                                             Inventory inventory) {
-            Log.d("WordLearner", "Query inventory finished.");
-
-
-            // Have we been disposed of in the meantime? If so, quit.
-            if (mHelper == null)
-                return;
-
-            // Is it a failure?
-            if (result.isFailure()) {
-                // complain("Failed to query inventory: " + result);
-                return;
-            }
-
-            Log.d("WordLearner", "Query inventory was successful.");
-
-			/*
-			 * Check for items we own. Notice that for each purchase, we check
-			 * the developer payload to see if it's correct! See
-			 * verifyDeveloperPayload().
-			 */
-
-            // Do we have the premium upgrade?
-            Purchase premiumPurchase1 = inventory.getPurchase(SKU_PREMIUM1);
-            Purchase premiumPurchase2 = inventory.getPurchase(SKU_PREMIUM2);
-            Purchase premiumPurchase3 = inventory.getPurchase(SKU_PREMIUM3);
-            mIsPremium = (premiumPurchase1 != null && verifyDeveloperPayload(premiumPurchase1)) ||
-                    (premiumPurchase2 != null && verifyDeveloperPayload(premiumPurchase2)) ||
-                    (premiumPurchase3 != null && verifyDeveloperPayload(premiumPurchase3));
-            Log.d("WordLearner", "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
-            new Handler().post(new Runnable() {
-
-                @Override
-                public void run() {
-
-                    if (mIsPremium) {
-                        PreferenceManager
-                                .getDefaultSharedPreferences(getBaseContext())
-                                .edit().putString("re", "qze").commit();
-                        findViewById(R.id.buttonRemoveAds).setVisibility(View.GONE);
-
-                    } else {
-                        PreferenceManager
-                                .getDefaultSharedPreferences(getBaseContext())
-                                .edit().putString("re", "ezq").commit();
-                        findViewById(R.id.buttonRemoveAds).setVisibility(
-                                View.VISIBLE);
-
-                            AdView mAdView = (AdView) findViewById(R.id.adView);
-                            AdRequest adRequest = new AdRequest.Builder().build();
-                            mAdView.loadAd(adRequest);
-                            findViewById(R.id.adView).setVisibility(View.VISIBLE);
-                            findViewById(R.id.buttonRemoveAds).setVisibility(View.VISIBLE);
-
-
-
-
-                    }
-
-
-                    Log.d("WordLearner", "Premium " + mIsPremium);
-
-                }
-            });
-
-        }
-    };
-
-
-
-    /** Verifies the developer payload of a purchase. */
-    boolean verifyDeveloperPayload(Purchase p) {
-        String payload = p.getDeveloperPayload();
-
-        String[] arr = getAccountNames();
-
-        boolean isPayloadcorrect = false;
-
-        for (int i = 0; i < arr.length; i++) {
-            if (payload.contains(arr[i]))
-                isPayloadcorrect = true;
-        }
-
-        // new Logger(getBaseContext()).Toast("Requested Payload was: "
-        // + generatePayLoad() + " receieved payload is: " + payload
-        // + " returning " + isPayloadcorrect);
-
-        return isPayloadcorrect;
-    }
-
-    // Callback for when a purchase is finished
-    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            Log.d("WordLearner", "Purchase finished: " + result + ", purchase: " + purchase);
-            Toast.makeText(getBaseContext(), "Purchase finished: " + result
-                    + ", purchase: " + purchase, Toast.LENGTH_LONG).show();
-
-            // if we were disposed of in the meantime, quit.
-            if (mHelper == null)
-                return;
-
-            if (result.isFailure()) {
-                // complain("Error purchasing: " + result);
-                // setWaitScreen(false);
-                return;
-            }
-            if (!verifyDeveloperPayload(purchase)) {
-                // complain("Error purchasing. Authenticity verification failed.");
-                // setWaitScreen(false);
-                return;
-            }
-
-            if (purchase.getSku().equals(SKU_PREMIUM1) || purchase.getSku().equals(SKU_PREMIUM2) || purchase.getSku().equals(SKU_PREMIUM3)) {
-                // bought the premium upgrade!
-                Log.d("WordLearner", "Purchase successful.");
-                Log.d("WordLearner", "Purchase is premium upgrade. Congratulating user.");
-                Toast.makeText(getBaseContext(),
-                        ("Thank you for donating. :)"),
-                        Toast.LENGTH_LONG).show();
-                mIsPremium = true;
-//                findViewById(R.id.bgoPremium).setVisibility(View.GONE);
-//                SwitchCompat sw = (SwitchCompat) findViewById(R.id.swEnableProf);
-//                sw.setEnabled(true);
-                // updateUi();
-                // setWaitScreen(false);
-            }
-        }
-    };
 
 }
