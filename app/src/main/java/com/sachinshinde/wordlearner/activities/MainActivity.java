@@ -79,6 +79,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 
@@ -520,7 +521,7 @@ public class MainActivity extends AppCompatActivity implements
                                 choice = 2;
                                 break;
                         }
-                        onUpgradeAppButtonClicked(choice);
+                        checkIfAccountsPermission(choice);
                     }
                 });
                 mDonateBuilder.setNegativeButton("CANCEL", null);
@@ -529,12 +530,53 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
+    private void checkIfAccountsPermission(int choice) {
+        Activity activity = MainActivity.this;
+        int permissionCheck = ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.GET_ACCOUNTS);
+
+        // Here, thisActivity is the current activity
+        if (permissionCheck
+                != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                    Manifest.permission.GET_ACCOUNTS)) {
+//                // Show an expanation to the user *asynchronously* -- don't block
+//                // this thread waiting for the user's response! After the user
+//                // sees the explanation, try again to request the permission.
+//
+//                AlertDialog.Builder mBuilder = new AlertDialog.Builder(activity);
+//                mBuilder.setTitle("");
+//                mBuilder.setMessage("");
+//
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.GET_ACCOUNTS},
+                        PERMISSION_CONSTANT);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+//            } else {
+            }
+        } else {
+            onUpgradeAppButtonClicked(choice);
+
+        }
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         checkIfIHavePermission();
+
+        Log.d("WeatherApp", Arrays.toString(getAccountNames()));
 
     }
 
@@ -563,6 +605,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private final int PERMISSION_CONSTANT = 10;
+    private final int PERMISSION_CONSTANT_ACCOUNT = 12;
 
     private void checkIfIHavePermission() {
         Activity activity = MainActivity.this;
@@ -951,12 +994,14 @@ public class MainActivity extends AppCompatActivity implements
 
 
     private String[] getAccountNames() {
+
         AccountManager mAccountManager = AccountManager.get(this);
         Account[] accounts = mAccountManager.getAccountsByType("com.google");
         String[] names = new String[accounts.length];
         for (int i = 0; i < names.length; i++) {
             names[i] = accounts[i].name;
         }
+
         return names;
     }
 
